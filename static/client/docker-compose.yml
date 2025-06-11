@@ -1,0 +1,20 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: front-quest-house
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - VIRTUAL_HOST=quest-house.by
+      - LETSENCRYPT_HOST=quest-house.by
+      - LETSENCRYPT_EMAIL=1@1.com
+    restart: unless-stopped
+    networks:
+      - horror_horror_core
+
+networks:
+  horror_horror_core:
+    external: true

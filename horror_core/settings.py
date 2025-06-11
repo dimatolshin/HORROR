@@ -26,11 +26,11 @@ SECRET_KEY = 'django-insecure-2gg-22ztvuc16dh35(zs)dx+_ws#ig3#d4^1%vmmokhn67=%og
 DEBUG = True
 
 # IP адреса или доменные имена, которые имеют доступ к приложению
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '5.101.51.223', '80.249.147.247', 'quest-house.by']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '5.101.51.223', '80.249.147.247', 'quest-house.by', 'api.quest-house.by']
 # Переменная для управления CORS, содержит список доменов с которых разрешены запросы
-CORS_ALLOWED_ORIGINS = ['http://5.101.51.223', 'https://5.101.51.223', 'https://80.249.147.247', 'http://80.249.147.247', 'http://quest-house.by', 'https://quest-house.by']
+CORS_ALLOWED_ORIGINS = ['http://5.101.51.223', 'https://5.101.51.223', 'https://80.249.147.247', 'http://80.249.147.247', 'http://quest-house.by', 'https://quest-house.by', 'https://api.quest-house.by']
 # Переменная определяет список доменов, которым Django доверяет при обработке CSRF-токенов.
-CSRF_TRUSTED_ORIGINS = ['http://5.101.51.223', 'https://5.101.51.223', 'https://80.249.147.247', 'http://80.249.147.247', 'http://quest-house.by', 'https://quest-house.by']
+CSRF_TRUSTED_ORIGINS = ['http://5.101.51.223', 'https://5.101.51.223', 'https://80.249.147.247', 'http://80.249.147.247', 'http://quest-house.by', 'https://quest-house.by', 'https://api.quest-house.by']
 CORS_ORIGIN_ALLOW_ALL = True
 
 
