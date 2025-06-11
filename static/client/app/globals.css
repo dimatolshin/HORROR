@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --red: #a40000;
+  --border: linear-gradient(180deg, rgba(255, 255, 255, 0) 100%);
+  --novelty: linear-gradient(90deg, #cd2b2b 15.05%, #090909 100%);
+  --footer: linear-gradient(
+    90deg,
+    #000618 2.31%,
+    #03b9bb 47.25%,
+    #000618 99.25%
+  );
+}
+
+body {
+  background: #0f0f0f;
+  font-family: var(--font-nunito), Arial, sans-serif;
+  font-size: 1.1rem;
+  zoom: 1;
+  transition: zoom 0.2s ease-in-out;
+}
+
+.container {
+  margin: 0 auto;
+  padding: 0 15px;
+  max-width: 1600px;
+}
+
+.header-bg {
+  background: linear-gradient(
+    180deg,
+    rgba(3, 35, 36, 0.7) 0%,
+    rgba(3, 35, 36, 0) 100%
+  );
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-range {
+  @apply appearance-none h-1 rounded-md bg-[#727272];
+}
+
+.custom-range::-webkit-slider-thumb {
+  @apply appearance-none w-[15px] h-[15px] rounded-full bg-[#0A8284] shadow-md;
+  cursor: pointer;
+  margin-top: -6px;
+}
+
+.custom-range::-webkit-slider-runnable-track {
+  @apply bg-[#727272] h-1 rounded-md;
+}
+
+.custom-range::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: #0a8284;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.custom-range::-moz-range-track {
+  background: #d1d5db;
+  height: 4px;
+  border-radius: 0.5rem;
+}
+
+.section--offset {
+  padding-top: 100px;
+}
+
+@media (min-width: 2960px) {
+  body {
+    zoom: 1.5;
+  }
+}
+
+@media (min-width: 2560px) and (max-width: 2959px) {
+  body {
+    zoom: 1.25;
+  }
+}
+
+@media (max-width: 640px) {
+  .section--offset {
+    padding-top: 36px;
+  }
+}
