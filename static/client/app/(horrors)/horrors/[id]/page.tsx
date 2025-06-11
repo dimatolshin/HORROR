@@ -1,20 +1,15 @@
 import { api } from "@/app/api/api";
-import { fetchOneHorror } from "@/app/api/horrors/fetchHorrors";
+import { fetchHorrors, fetchOneHorror } from "@/app/api/horrors/fetchHorrors";
+import fetchReviews from "@/app/api/reviews/fetchReviews";
+import ReviewsSection from "@/app/pages/HomePage/ReviewsSection";
+import HeroHorrorSection from "@/app/pages/OrderPage/HeroHorrorSection";
+import RulesSection from "@/app/pages/OrderPage/RulesSection";
+import Awards from "@/app/widgets/awards/awards";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
-const HeroHorrorSection = dynamic(
-  () => import("@/app/pages/OrderPage/HeroHorrorSection")
-);
-const Awards = dynamic(() => import("@/app/widgets/awards/awards"));
-const RulesSection = dynamic(
-  () => import("@/app/pages/OrderPage/RulesSection")
-);
 const ReservationHorrorSection = dynamic(
   () => import("@/app/pages/OrderPage/ReservationHorrorSection")
-);
-const ReviewsSection = dynamic(
-  () => import("@/app/pages/HomePage/ReviewsSection")
 );
 const Contacts = dynamic(() => import("@/app/widgets/contacts/contacts"));
 
@@ -45,36 +40,32 @@ export default async function HorrorsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const horrors = await fetchOneHorror(id);
+
+  const horrorPromise = fetchOneHorror(id);
+  const allHorrorsPromise = fetchHorrors();
+  const reviewsPromise = fetchReviews();
+
+  const [currentHorror, horrors, reviews] = await Promise.all([
+    horrorPromise,
+    allHorrorsPromise,
+    reviewsPromise,
+  ]);
 
   return (
     <>
       <main className="main">
         <HeroHorrorSection
-          complexity={horrors.complexity}
-          count_players={horrors.count_players}
-          description={horrors.description}
-          fear={horrors.fear}
-          genre={horrors.genre}
-          id={horrors.id}
-          is_active={horrors.is_active}
-          location={horrors.location}
-          name={horrors.name}
-          novelty={horrors.novelty}
-          photos={horrors.photos}
-          photos_back_card={horrors.photos_back_card}
-          photos_blur={horrors.photos_blur}
-          rating={horrors.rating}
-          registration_date={horrors.registration_date}
-          travel_time={horrors.travel_time}
+          allHorrors={horrors}
+          reviews={reviews}
+          horror={currentHorror}
         />
-        <Awards id={horrors.id} />
+        <Awards id={currentHorror.id} />
         <RulesSection />
-        <ReservationHorrorSection horror={horrors} />
+        <ReservationHorrorSection horror={currentHorror} />
         <div className="block md:hidden">
-          <ReviewsSection />
+          <ReviewsSection reviews={reviews} />
         </div>
-        <Contacts location={horrors.location} />
+        <Contacts location={currentHorror.location} />
       </main>
     </>
   );

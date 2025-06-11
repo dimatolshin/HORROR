@@ -11,7 +11,7 @@ export const LinkUI: React.FC<ILinkUI> = ({ href, children, className }) => {
     <Link
       className={classNames(
         className,
-        "px-[9px] text-[12px] py-[6px] flex justify-center items-center bg-(--red) sm:py-4 sm:px-6 sm:text-[18px] text-white rounded-lg"
+        "px-[9px] text-[12px] py-[6px] flex justify-center items-center bg-(--red) sm:py-4 sm:px-6 sm:text-[18px] text-white rounded-sm sm:rounded-lg"
       )}
       href={href}
     >

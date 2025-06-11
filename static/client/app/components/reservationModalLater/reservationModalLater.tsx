@@ -1,7 +1,7 @@
 "use client";
 
 import Dialog from "@/app/ui/dialogUI/dialogUI";
-import { RefObject, useState } from "react";
+import { useState } from "react";
 import { IHorrorsPromise } from "@/app/api/horrors/fetchHorrors";
 import { FormField } from "@/app/ui/formField/formField";
 import { Checkbox } from "@/app/ui/checkbox/checkbox";
@@ -14,7 +14,7 @@ import { ReservLaterScheme, ReservLaterType } from "@/app/types/reservLater";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface IModal {
-  dialogRef: RefObject<HTMLDialogElement | null>;
+  dialogOpen: boolean;
   onClose: () => void;
   questDetails: IHorrorsPromise;
 }
@@ -28,12 +28,14 @@ const pricingPerPerson = {
 } as const;
 
 export const ReservationModalLater = ({
-  dialogRef,
+  dialogOpen,
   onClose,
   questDetails,
 }: IModal) => {
   const [numberOfPeople, setNumberOfPeople] = useState(1);
-  const [useCertificate, setUseCertificate] = useState(false);
+  const [useCertificate, setUseCertificate] = useState<boolean>(false);
+  const [useYear, setUseYear] = useState<boolean>(false);
+  const [useAgreement, setUseAgreement] = useState<boolean>(false);
 
   const calculatePrice = () => {
     return pricingPerPerson[numberOfPeople as keyof typeof pricingPerPerson];
@@ -76,6 +78,9 @@ export const ReservationModalLater = ({
       mutationKey: ["reserv"],
       onSuccess() {
         queryClient.invalidateQueries({ queryKey: ["slots"] });
+        setUseCertificate(false);
+        setUseAgreement(false);
+        setUseYear(false);
         reset();
       },
     },
@@ -90,7 +95,7 @@ export const ReservationModalLater = ({
   } = useForm<ReservLaterType>({ resolver: zodResolver(ReservLaterScheme) });
 
   return (
-    <Dialog className="h-[90%!important]" ref={dialogRef} onClose={onClose}>
+    <Dialog className="h-[90%!important]" isOpen={dialogOpen} onClose={onClose}>
       <div className="flex flex-col sm:flex-row h-full text-white">
         <div className="bg-[#82D7DB69] h-full min-h-[230px] overflow-hidden max-w-[567px] w-full flex flex-col pt-[53px] px-[24px] md:pt-[60px]">
           <div className="flex flex-col items-center mb-auto">
@@ -195,8 +200,23 @@ export const ReservationModalLater = ({
               placeholder="Введите ваш комментарий"
             ></textarea>
           </FormField>
-          <Checkbox className="mt-4 mb-2" label="Все игроки старше 14 лет" />
-          <Checkbox label="Я согласен с Политикой обработки персональных данных и пользовательским соглашением" />
+          <div className="mt-6">
+            <Checkbox
+              error={errors.year?.message}
+              {...register("year")}
+              checked={useYear}
+              onChange={(e) => setUseYear(e.target.checked)}
+              className="mb-2"
+              label="Все игроки старше 14 лет"
+            />
+            <Checkbox
+              error={errors.agreement?.message}
+              {...register("agreement")}
+              checked={useAgreement}
+              onChange={(e) => setUseAgreement(e.target.checked)}
+              label="Я согласен с Политикой обработки персональных данных и пользовательским соглашением"
+            />
+          </div>
           <div className="min-h-[60px] sm:min-h-[98px] bg-[url(assets/webp/btn_bg.png)] bg-no-repeat bg-center bg-size-[100%_60%] sm:bg-size-[100%_70%] flex items-end justify-center">
             <button
               className="text-white max-w-[181px] py-[6px] px-[12px] text-[14px] sm:text-[18px] sm:py-[16px] sm:px-[24px] cursor-pointer bg-(--red) rounded-lg"

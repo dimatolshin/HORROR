@@ -1,29 +1,33 @@
 import dynamic from "next/dynamic";
 import { fetchHorrors } from "../api/horrors/fetchHorrors";
 import HeroSection from "../pages/HomePage/HeroSection";
+import fetchReviews from "../api/reviews/fetchReviews";
+import PopularSection from "../pages/HomePage/PopularSection";
+import AboutSection from "../pages/HomePage/AboutSection";
+import ReviewsSection from "../pages/HomePage/ReviewsSection";
 
-const PopularSection = dynamic(
-  () => import("../pages/HomePage/PopularSection")
-);
-const AboutSection = dynamic(() => import("../pages/HomePage/AboutSection"));
 const ReservationSection = dynamic(
   () => import("../pages/HomePage/ReservationSection")
 );
-const ReviewsSection = dynamic(
-  () => import("../pages/HomePage/ReviewsSection")
-);
+
 const Contacts = dynamic(() => import("../widgets/contacts/contacts"));
 
 export default async function HomePage() {
-  const horrors = await fetchHorrors();
+  const horrorsPromise = fetchHorrors();
+  const reviewsPromise = fetchReviews();
+
+  const [horrors, reviews] = await Promise.all([
+    horrorsPromise,
+    reviewsPromise,
+  ]);
 
   return (
     <main className="main">
       <HeroSection />
-      <PopularSection />
+      <PopularSection horror={horrors} />
       <AboutSection />
       <ReservationSection horror={horrors} />
-      <ReviewsSection />
+      <ReviewsSection reviews={reviews} />
       <Contacts />
     </main>
   );

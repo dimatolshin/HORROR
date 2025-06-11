@@ -25,12 +25,12 @@ export const ReviewList = ({ review }: IReviews) => {
     <>
       {mediaQuery ? (
         <CustomSwiper
-          swiperSlide="m-auto min-h-[430px] items-center"
+          swiperSlide="m-auto min-h-[330px] items-center"
           config={{ slidesPerView: 1 }}
         >
           {reviewsToRender.map((element) => (
             <ReviewUI
-              className="max-w-[calc(100%-5em)] m-auto min-h-[430px]"
+              className="max-w-[calc(100%-5em)] m-auto min-h-[330px]"
               key={element.id}
               id={element.id}
               datetime={element.datetime}
@@ -41,7 +41,7 @@ export const ReviewList = ({ review }: IReviews) => {
           ))}
         </CustomSwiper>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-[100px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-[50px]">
           {reviewsToRender.map((element) => (
             <ReviewUI
               key={element.id}

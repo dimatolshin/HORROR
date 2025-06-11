@@ -1,7 +1,7 @@
 "use client";
 
 import Dialog from "@/app/ui/dialogUI/dialogUI";
-import { RefObject, useState } from "react";
+import { useState } from "react";
 import { IHorrorsPromise } from "@/app/api/horrors/fetchHorrors";
 import { FormField } from "@/app/ui/formField/formField";
 import Image from "next/image";
@@ -24,7 +24,7 @@ interface ReservationModalPromise extends IHorrorsPromise {
 }
 
 interface IModal {
-  dialogRef: RefObject<HTMLDialogElement | null>;
+  dialogOpen: boolean;
   onClose: () => void;
   questDetails: ReservationModalPromise;
 }
@@ -38,7 +38,7 @@ const pricingPerPerson = {
 } as const;
 
 export const ReservationModal = ({
-  dialogRef,
+  dialogOpen,
   onClose,
   questDetails,
 }: IModal) => {
@@ -87,8 +87,12 @@ export const ReservationModal = ({
         }),
       mutationKey: ["reserv"],
       onSuccess() {
-        queryClient.invalidateQueries({ queryKey: ["slots"] });
+        queryClient.invalidateQueries({ queryKey: ["slots", questDetails.id] });
+        setUseCertificate(false);
+        setUseAgreement(false);
+        setUseYear(false);
         reset();
+        onClose();
       },
     },
     queryClient
@@ -105,50 +109,44 @@ export const ReservationModal = ({
 
   return (
     <Dialog
-      classNameBTN="left-[calc(100%-4em)!important]"
-      classNameContent="h-full"
-      ref={dialogRef}
+      classNameBTN="left-[calc(100%-4em)] sm:left-[calc(100%-4em)!important]"
+      classNameContent="h-full overflow-y-auto"
+      isOpen={dialogOpen}
       onClose={onClose}
     >
       <div className="flex flex-col sm:flex-row h-full text-white">
-        <div className="bg-[#82D7DB69] h-full max-w-[567px] w-full flex flex-col py-[53px] px-[24px] md:py-[60px]">
-          <div className="flex flex-col items-center mb-auto">
-            <span className="mb-[46px] text-[24px] sm:text-[28px] md:text-[36px] font-bold">
+        <div className="bg-[#82D7DB69] w-full sm:max-w-[40%] md:max-w-[567px] flex flex-col p-6 sm:py-10 sm:px-6">
+          <div className="flex flex-col items-center text-center mb-20">
+            <span className="mb-8 text-xl sm:text-2xl md:text-3xl font-bold">
               Бронирование
             </span>
-            <span>Квест - перфоманс</span>
-            <h2 className="mb-[20px] font-bold text-[24px]">
+            <span className="text-sm sm:text-base">Квест - перфоманс</span>
+            <h2 className="mb-5 font-bold text-lg sm:text-xl md:text-2xl">
               {questDetails.name}
             </h2>
           </div>
-          <ul className="flex flex-row gap-[9px] md:flex-col sm:gap-[30px] mx-auto items-center max-w-[315px] w-full">
-            <li className="w-full flex flex-col gap-[14px] pr-[9px] text-[18px] sm:pr-0 items-center sm:text-[24px] border-r-1 md:border-r-0 md:border-b-1 border-solid md:pb-[30px]">
+          <ul className="flex flex-row justify-around gap-4 md:flex-col sm:gap-8 mx-auto items-center w-full sm:max-w-[315px]">
+            <li className="w-full flex flex-col gap-2 text-base sm:text-lg items-center md:border-b-1 border-solid md:pb-6">
               <Image
-                className="w-[30px] h-[30px] md:w-[54px] md:h-[54px]"
-                width={54}
-                height={54}
+                className="w-8 h-8 md:w-12 md:h-12"
                 src={calendar}
-                alt={"дата"}
+                alt="дата"
               />
               <span>Дата</span>
             </li>
-            <li className="w-full flex flex-col gap-[14px] pr-[9px] text-[18px] sm:pr-0 items-center sm:text-[24px] border-r-1 md:border-r-0 md:border-b-1 border-solid md:pb-[30px]">
+            <li className="w-full flex flex-col gap-2 text-base sm:text-lg items-center md:border-b-1 border-solid md:pb-6">
               <Image
-                className="w-[30px] h-[30px] md:w-[54px] md:h-[54px]"
-                width={54}
-                height={54}
+                className="w-8 h-8 md:w-12 md:h-12"
                 src={clock}
-                alt={"время"}
+                alt="время"
               />
               <span>{questDetails.time}</span>
             </li>
-            <li className="w-full flex flex-col gap-[14px] items-center text-[18px] sm:text-[24px]">
+            <li className="w-full flex flex-col gap-2 items-center text-base sm:text-lg">
               <Image
-                className="w-[30px] h-[30px] md:w-[54px] md:h-[54px]"
-                width={54}
-                height={54}
+                className="w-8 h-8 md:w-12 md:h-12"
                 src={money}
-                alt={"деньги"}
+                alt="деньги"
               />
               <span>{calculatePrice()} Br</span>
             </li>
@@ -168,12 +166,12 @@ export const ReservationModal = ({
               price: calculatePrice(),
             });
           })}
-          className="flex flex-col w-full py-[50px] px-[30px] lg:py-[87px] lg:px-[117px]"
+          className="flex flex-col w-full p-6 sm:p-8 md:p-12 lg:p-16 overflow-y-auto"
         >
-          <div className="grid grid-cols-1 gap-y-[30px] lg:gap-[42px] lg:gap-y-[30px] lg:grid-cols-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <FormField errors={errors.first_name?.message} label="Имя">
               <input
-                className="pb-[10px] transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                 type="text"
                 placeholder="Имя"
                 {...register("first_name")}
@@ -181,7 +179,7 @@ export const ReservationModal = ({
             </FormField>
             <FormField errors={errors.last_name?.message} label="Фамилия">
               <input
-                className="pb-[10px] transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                 type="text"
                 placeholder="Фамилия"
                 {...register("last_name")}
@@ -189,24 +187,23 @@ export const ReservationModal = ({
             </FormField>
             <FormField errors={errors.phone?.message} label="Ваш телефон">
               <input
-                className="pb-[10px] transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                 type="tel"
                 placeholder="Ваш телефон"
                 {...register("phone")}
               />
             </FormField>
             <FormField label="Количество участников">
-              <div className="relative h-[21px] mb-[15px]">
-                <span className="label left-[0] absolute">1</span>
+              <div className="relative h-5 mb-4 text-xs">
+                <span className="label left-[0%] absolute">1</span>
                 <span className="label left-[24%] absolute">2</span>
                 <span className="label left-[48%] absolute">3</span>
                 <span className="label left-[72%] absolute">4</span>
                 <span className="label left-[97%] absolute">5</span>
               </div>
               <input
-                className="custom-range"
+                className="custom-range w-full"
                 type="range"
-                placeholder="Ваш телефон"
                 min={1}
                 max={5}
                 step={1}
@@ -217,7 +214,7 @@ export const ReservationModal = ({
             </FormField>
           </div>
           <Checkbox
-            className="my-6"
+            className="my-4 sm:my-6"
             checked={useCertificate}
             {...register("certificate")}
             onChange={(e) => setUseCertificate(e.target.checked)}
@@ -225,30 +222,31 @@ export const ReservationModal = ({
           />
           <FormField className="mb-auto" label="Комментарий">
             <textarea
-              className="pb-[10px] resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+              className="w-full bg-transparent pb-2 resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
               placeholder="Введите ваш комментарий"
               {...register("comment")}
             ></textarea>
           </FormField>
-
-          <Checkbox
-            error={errors.year?.message}
-            {...register("year")}
-            checked={useYear}
-            onChange={(e) => setUseYear(e.target.checked)}
-            className="mt-4 mb-2"
-            label="Все игроки старше 14 лет"
-          />
-          <Checkbox
-            error={errors.agreement?.message}
-            {...register("agreement")}
-            checked={useAgreement}
-            onChange={(e) => setUseAgreement(e.target.checked)}
-            label="Я согласен с Политикой обработки персональных данных и пользовательским соглашением"
-          />
-          <div className="min-h-[60px] sm:min-h-[98px] bg-[url(assets/webp/btn_bg.png)] bg-no-repeat bg-center bg-size-[100%_60%] sm:bg-size-[100%_70%] flex items-end justify-center">
+          <div className="mt-6">
+            <Checkbox
+              error={errors.year?.message}
+              {...register("year")}
+              checked={useYear}
+              onChange={(e) => setUseYear(e.target.checked)}
+              className="mb-2"
+              label="Все игроки старше 14 лет"
+            />
+            <Checkbox
+              error={errors.agreement?.message}
+              {...register("agreement")}
+              checked={useAgreement}
+              onChange={(e) => setUseAgreement(e.target.checked)}
+              label="Я согласен с Политикой обработки персональных данных и пользовательским соглашением"
+            />
+          </div>
+          <div className="mt-6 min-h-[60px] sm:min-h-[98px] bg-[url(assets/webp/btn_bg.png)] bg-no-repeat bg-center bg-contain sm:bg-size-[100%_70%] flex items-end justify-center">
             <button
-              className="text-white max-w-[181px] py-[6px] px-[12px] text-[14px] sm:text-[18px] sm:py-[16px] sm:px-[24px] cursor-pointer bg-(--red) rounded-lg"
+              className="text-white max-w-[181px] text-sm sm:text-lg py-2 px-4 sm:py-4 sm:px-6 cursor-pointer bg-(--red) rounded-lg"
               type="submit"
             >
               Забронировать

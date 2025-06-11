@@ -4,14 +4,14 @@ const nextConfig: NextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
-      allowedOrigins: ["https://quest-house.by"],
+      allowedOrigins: ["https://api.quest-house.by"],
     },
   },
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "quest-house.by",
+        hostname: "api.quest-house.by",
       },
     ],
   },

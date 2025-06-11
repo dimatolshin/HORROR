@@ -2,15 +2,15 @@
 
 import Dialog from "@/app/ui/dialogUI/dialogUI";
 import { ReviewUI } from "@/app/ui/reviewUI/reviewUI";
-import { RefObject, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import fetchReviews, { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
 
 interface IModal {
-  dialogRef: RefObject<HTMLDialogElement | null>;
+  dialogOpen: boolean;
   onClose: () => void;
 }
 
-export const ReviewsModal = ({ dialogRef, onClose }: IModal) => {
+export const ReviewsModal = ({ dialogOpen, onClose }: IModal) => {
   const [reviews, setReviews] = useState<IReviewsPromise[]>([]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export const ReviewsModal = ({ dialogRef, onClose }: IModal) => {
     <Dialog
       classNameBTN="sticky"
       classNameContent="h-[auto!important]"
-      ref={dialogRef}
+      isOpen={dialogOpen}
       onClose={onClose}
     >
       <div className="px-[53px] py-[56px] md:px-[120px] overflow-y-auto gap-[20px] grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">

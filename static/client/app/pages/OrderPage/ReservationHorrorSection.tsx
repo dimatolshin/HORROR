@@ -6,7 +6,7 @@ import { ReservationTable } from "@/app/widgets/reservationTable/reservationTabl
 import Image from "next/image";
 import clock from "@/app/assets/svg/clock_popular.svg";
 import { ReservationModalLater } from "@/app/components/reservationModalLater/reservationModalLater";
-import { useRef } from "react";
+import { useState } from "react";
 
 interface IReservationHorror {
   horror: IHorrorsPromise;
@@ -39,7 +39,7 @@ const PRICE: IPrice[] = [
 export default function ReservationHorrorSection({
   horror,
 }: IReservationHorror) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
 
   return (
     <>
@@ -53,7 +53,7 @@ export default function ReservationHorrorSection({
               <hr className="w-full" />
               {horror.is_active ? (
                 <button
-                  onClick={() => dialogRef.current?.showModal()}
+                  onClick={() => setIsOpenDialog(false)}
                   className="gap-2 text-[12px] shrink-0 px-[9px] sm:text-[18px] py-[6px] flex justify-center items-center bg-(--red) sm:py-4 sm:px-6 text-white rounded-lg cursor-pointer"
                 >
                   <Image width={24} height={24} src={calendar} alt={"photo"} />
@@ -102,8 +102,8 @@ export default function ReservationHorrorSection({
         </div>
       </section>
       <ReservationModalLater
-        dialogRef={dialogRef}
-        onClose={() => dialogRef.current?.close()}
+        dialogOpen={isOpenDialog}
+        onClose={() => setIsOpenDialog(false)}
         questDetails={horror}
       />
     </>

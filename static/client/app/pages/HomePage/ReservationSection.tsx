@@ -6,7 +6,7 @@ import { ReservationTable } from "@/app/widgets/reservationTable/reservationTabl
 import Image from "next/image";
 import clock from "@/app/assets/svg/clock_popular.svg";
 import { ReservationModalLater } from "@/app/components/reservationModalLater/reservationModalLater";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { CustomSwiper } from "@/app/ui/customSwiper/customSwiper";
 import { RatingUI } from "@/app/ui/ratingUI/ratingUI";
 import { api } from "@/app/api/api";
@@ -40,7 +40,7 @@ const PRICE: IPrice[] = [
 ];
 
 export default function ReservationSection({ horror }: IReservationHorror) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const [selectedQuest, setSelectedQuest] = useState<IHorrorsPromise | null>(
     horror.find((q) => q.is_active)!
   );
@@ -58,7 +58,7 @@ export default function ReservationSection({ horror }: IReservationHorror) {
               <hr className="w-full" />
               {horror ? (
                 <button
-                  onClick={() => dialogRef.current?.showModal()}
+                  onClick={() => setIsOpenDialog(true)}
                   className="hidden gap-2 text-[12px] shrink-0 px-[9px] sm:text-[18px] py-[6px] sm:flex justify-center items-center bg-(--red) sm:py-4 sm:px-6 text-white rounded-lg cursor-pointer"
                 >
                   <Image width={24} height={24} src={calendar} alt={"photo"} />
@@ -122,9 +122,9 @@ export default function ReservationSection({ horror }: IReservationHorror) {
               <div
                 key={element.id}
                 onClick={() => setSelectedQuest(element)}
-                className={`text-white border-1 border-solid border-[#ffffff2e] min-h-[168px] mt-[15px] m-auto max-w-[290px] transition ease-in-out relative flex justify-end rounded-2xl cursor-pointer ${
+                className={`text-white border-1 border-solid border-[#ffffff2e] min-h-[168px] mt-[15px] m-auto max-w-[calc(100%-4.5em)] sm:max-w-[290px] transition ease-in-out relative flex justify-end rounded-2xl cursor-pointer ${
                   selectedQuest?.id === element.id
-                    ? "shadow-[0px_2.43px_12.13px_0px_#FFFFFF33] scale-[1.08]"
+                    ? "shadow-[0px_2.43px_12.13px_0px_#FFFFFF33] sm:scale-[1.08]"
                     : ""
                 } ${selectedQuest && index === 0 ? "sm:ml-[20px]" : ""}`}
               >
@@ -167,8 +167,8 @@ export default function ReservationSection({ horror }: IReservationHorror) {
       </section>
       {selectedQuest && (
         <ReservationModalLater
-          dialogRef={dialogRef}
-          onClose={() => dialogRef.current?.close()}
+          dialogOpen={isOpenDialog}
+          onClose={() => setIsOpenDialog(false)}
           questDetails={selectedQuest}
         />
       )}

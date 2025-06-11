@@ -61,10 +61,10 @@ export const ReviewUI = ({
       <Image style={{ marginBottom: "8px" }} src={reviewQuote} alt="отзыв" />
       <div className="mb-auto">
         <blockquote className="mb-[17px] text-sm">
-          {isExpanded || text.length <= 307 ? text : `${text.slice(0, 307)}...`}
+          {isExpanded || text.length <= 80 ? text : `${text.slice(0, 80)}...`}
         </blockquote>
         <div className="mb-5">
-          {text.length > 307 && (
+          {text.length > 80 && (
             <button
               className="text-[#11B3D1] border-b-1 border-dashed cursor-pointer"
               onClick={() => setIsExpanded(!isExpanded)}

@@ -19,7 +19,7 @@ export const HeroVideo = () => {
 
   return (
     <video
-      className="absolute z-10 w-full h-full object-cover"
+      className="left-0 absolute z-10 w-full h-[50vh] sm:h-full object-cover object-[30%_bottom] sm:object-bottom"
       preload="metadata"
       muted
       loop

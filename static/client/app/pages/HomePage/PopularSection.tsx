@@ -1,10 +1,12 @@
-import { fetchHorrors } from "@/app/api/horrors/fetchHorrors";
+import { IHorrorsPromise } from "@/app/api/horrors/fetchHorrors";
 import { PopularCard } from "@/app/components/popularCard/popularCard";
 import { TitleBlockUI } from "@/app/ui/titleBlockUI/titleBlockUI";
 
-export default async function PopularSection() {
-  const horror = await fetchHorrors();
+interface PopularProps {
+  horror: IHorrorsPromise[];
+}
 
+export default async function PopularSection({ horror }: PopularProps) {
   return (
     <section id="popular" className="popular section--offset">
       <div className="container">

@@ -21,18 +21,17 @@ interface IContacts {
   location?: string;
 }
 
-const LOCATIONS: Record<
-  "first" | "second",
-  { title: string; address: IAddress[] }
-> = {
+type LocationKey = "first" | "second";
+
+const LOCATIONS: Record<LocationKey, { title: string; address: IAddress[] }> = {
   first: {
     title: "Локация 1",
     address: [
       {
         id: "1",
         icon: phone,
-        label: "+(375) 445-33-02-78",
-        path: "tel:+(375) 445-33-02-78",
+        label: "+375 (44) 533-02-78",
+        path: "tel:+375 (44) 533-02-78",
       },
       {
         id: "2",
@@ -54,8 +53,8 @@ const LOCATIONS: Record<
       {
         id: "1",
         icon: phone,
-        label: "+(375) 445-33-02-78",
-        path: "tel:+(375) 445-33-02-78",
+        label: "+375 (44) 533-02-78",
+        path: "tel:+375 (44) 533-02-78",
       },
       {
         id: "2",
@@ -75,9 +74,9 @@ const LOCATIONS: Record<
 
 const detectLocationByLabel = (
   labelFromBackend: string | undefined
-): "first" | "second" => {
+): LocationKey => {
   if (!labelFromBackend) return "first";
-  for (const key of Object.keys(LOCATIONS) as ("first" | "second")[]) {
+  for (const key of Object.keys(LOCATIONS) as LocationKey[]) {
     const found = LOCATIONS[key].address.find(
       (item) => item.label === labelFromBackend
     );
@@ -87,16 +86,21 @@ const detectLocationByLabel = (
 };
 
 const Contacts = ({ location }: IContacts) => {
-  const initialLocation = useMemo(
+  const isStaticLocation = !!location;
+
+  const initialLocationKey = useMemo(
     () => detectLocationByLabel(location),
     [location]
   );
-  const [locationValue, setLocationValue] = useState<"first" | "second">(
-    initialLocation
-  );
-  const isStaticLocation = !!location;
 
-  const { title, address } = LOCATIONS[locationValue];
+  const [activeLocationKey, setActiveLocationKey] =
+    useState<LocationKey>(initialLocationKey);
+
+  const displayLocationKey = isStaticLocation
+    ? initialLocationKey
+    : activeLocationKey;
+
+  const { title, address } = LOCATIONS[displayLocationKey];
 
   return (
     <section
@@ -108,20 +112,31 @@ const Contacts = ({ location }: IContacts) => {
           <TitleBlockUI
             title="Наши контакты"
             label="Позвонить"
-            href="tel:+(375) 445-33-02-78"
+            href="tel:+375 (44) 533-02-78"
             icon={phone}
           />
           <div className="flex flex-col gap-[14px] lg:gap-[60px] lg:flex-row">
             <div className="relative shrink-0">
-              {!isStaticLocation && (
+              {isStaticLocation ? (
+                <div
+                  className={`max-w-[70px] md:max-w-max absolute translate-y-[-50%] translate-x-[-50%] ${
+                    displayLocationKey === "first"
+                      ? "top-[23%] left-[25%]"
+                      : "top-[50%] left-[70%]"
+                  }`}
+                >
+                  <Image src={locationActive} alt={`Локация ${title}`} />
+                </div>
+              ) : (
+                // Если на главной, показываем ДВЕ метки-кнопки
                 <>
                   <button
                     className="max-w-[70px] md:max-w-max absolute top-[23%] left-[25%] translate-y-[-50%] translate-x-[-50%]"
-                    onClick={() => setLocationValue("first")}
+                    onClick={() => setActiveLocationKey("first")}
                   >
                     <Image
                       src={
-                        locationValue === "first"
+                        activeLocationKey === "first"
                           ? locationActive
                           : locationInactive
                       }
@@ -130,11 +145,11 @@ const Contacts = ({ location }: IContacts) => {
                   </button>
                   <button
                     className="max-w-[70px] md:max-w-max absolute top-[50%] left-[70%] translate-y-[-50%] translate-x-[-50%]"
-                    onClick={() => setLocationValue("second")}
+                    onClick={() => setActiveLocationKey("second")}
                   >
                     <Image
                       src={
-                        locationValue === "second"
+                        activeLocationKey === "second"
                           ? locationActive
                           : locationInactive
                       }
@@ -152,7 +167,8 @@ const Contacts = ({ location }: IContacts) => {
               />
             </div>
             <address className="border-3 border-solid border-[#FFFFFF47] not-italic gap-[37px] p-[30px] w-full text-white bg-[#20393A] flex justify-center flex-col rounded-4xl md:gap-[100px] lg:px-[61px]">
-              {!location && (
+              {/* Логика отображения заголовка: не показываем его, если локация статична (на странице квеста) */}
+              {!isStaticLocation && (
                 <h3 className="font-[800] text-2xl border-b-1 pb-[10px] md:text-6xl md:pb-[26px]">
                   {title}
                 </h3>

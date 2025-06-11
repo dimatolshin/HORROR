@@ -4,7 +4,7 @@ import starIcon from "@/app/assets/svg/star_review.svg";
 import Image from "next/image";
 import { ReviewsModal } from "@/app/components/reviewsModal/reviewsModal";
 import { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
-import { useRef } from "react";
+import { useState } from "react";
 
 interface IReviews {
   review: IReviewsPromise[];
@@ -22,7 +22,7 @@ const renderStars = (rating: number) => {
 };
 
 export const HorrorReviews = ({ review, rating }: IReviews) => {
-  const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
 
   return (
     <>
@@ -39,7 +39,7 @@ export const HorrorReviews = ({ review, rating }: IReviews) => {
           ))}
           <li>
             <button
-              onClick={() => dialogRef.current?.showModal()}
+              onClick={() => setIsOpenDialog(true)}
               className="text-[#11B3D1] cursor-pointer border-b-1 border-dashed text-sm"
             >
               Читать все отзывы
@@ -48,8 +48,8 @@ export const HorrorReviews = ({ review, rating }: IReviews) => {
         </ul>
       </div>
       <ReviewsModal
-        dialogRef={dialogRef}
-        onClose={() => dialogRef.current?.close()}
+        dialogOpen={isOpenDialog}
+        onClose={() => setIsOpenDialog(false)}
       />
     </>
   );

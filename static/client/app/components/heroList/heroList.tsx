@@ -41,7 +41,7 @@ export const HeroList = () => {
             >
               <strong className="mb-[17px] text-[18px]">{element.title}</strong>
               <hr className="mb-3.5" />
-              <p className="text-[10px] whitespace-pre-line">{element.text}</p>
+              <p className="text-[12px] whitespace-pre-line">{element.text}</p>
             </div>
           ))}
         </CustomSwiper>

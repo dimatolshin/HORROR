@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "@/app/assets/svg/logo.svg";
 import { LinkUI } from "@/app/ui/linkUI/linkUI";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ReviewsModal } from "@/app/components/reviewsModal/reviewsModal";
 import burger from "@/app/assets/svg/menu.svg";
 
@@ -45,7 +45,7 @@ const NAV: INav[] = [
 ];
 
 export const HeaderHorror = () => {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const [navValue, setNavValue] = useState<string>("#");
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
 
@@ -98,7 +98,7 @@ export const HeaderHorror = () => {
                         className={`py-3.5 px-7 inline-block rounded-lg cursor-pointer ${
                           navValue === element.path && "bg-[#262626]"
                         }`}
-                        onClick={() => dialogRef.current?.showModal()}
+                        onClick={() => setIsOpenDialog(true)}
                       >
                         {element.text}
                       </button>
@@ -117,8 +117,8 @@ export const HeaderHorror = () => {
         </div>
       </header>
       <ReviewsModal
-        dialogRef={dialogRef}
-        onClose={() => dialogRef.current?.close()}
+        dialogOpen={isOpenDialog}
+        onClose={() => setIsOpenDialog(false)}
       />
     </>
   );
