@@ -15,9 +15,7 @@ export const TitleBlockUI = ({ href, title, label, icon }: ITitleBlock) => {
       <hr className="w-full" />
       {href && (
         <LinkUI className="gap-2 shrink-0" href={href}>
-          {icon && (
-            <Image width={24} height={24} src={icon} alt={label || "photo"} />
-          )}
+          {icon && <Image width={24} height={24} src={icon} alt={"иконка"} />}
           {label}
         </LinkUI>
       )}

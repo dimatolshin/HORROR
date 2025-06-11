@@ -37,11 +37,11 @@ export const Footer = () => {
               className="flex flex-col items-center gap-2 border-1 rounded-2xl px-[31px] py-[16px]"
               href={"#hero"}
             >
-              <Image src={arrow} alt="Наверх страницы" />
+              <Image src={arrow} alt="Наверх" />
               Наверх страницы
             </Link>
           </div>
-          <div className="flex flex-col text-[14px] underline relative order-2 sm:order-3 text-center sm:text-right">
+          <div className="flex flex-col gap-1 text-[14px] underline relative order-2 sm:order-3 text-center sm:text-right">
             {PRAVILA.map((element) => (
               <Link key={element.id} href={element.path}>
                 {element.label}

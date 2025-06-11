@@ -180,7 +180,7 @@ const Contacts = ({ location }: IContacts) => {
                       className="flex items-center gap-3 md:gap-[30px]"
                       href={element.path}
                     >
-                      <Image src={element.icon} alt={element.label} />
+                      <Image src={element.icon} alt={"иконка контакта"} />
                       <span>{element.label}</span>
                     </a>
                   </li>
