@@ -5,7 +5,7 @@ import checkedIcon from "@/app/assets/svg/checked.svg";
 import notCheckedIcon from "@/app/assets/svg/notChecked.svg";
 
 interface ICheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label: React.ReactNode;
   checked?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;

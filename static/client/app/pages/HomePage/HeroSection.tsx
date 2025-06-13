@@ -4,7 +4,7 @@ import { HeroVideo } from "@/app/components/heroVideo/heroVideo";
 const HeroSection = () => {
   return (
     <section
-      className="hero relative min-h-[70vh] sm:min-h-auto sm:h-screen overflow-hidden"
+      className="hero relative min-h-[70vh] sm:min-h-screen sm:h-screen overflow-hidden"
       id="hero"
     >
       <HeroVideo />

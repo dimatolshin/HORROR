@@ -1,6 +1,8 @@
 import { Nunito, Poppins } from "next/font/google";
 import "./globals.css";
 import type { Metadata } from "next";
+import YandexMetrikaContainer from "@/app/lib/yandex";
+import { GoogleAnalytics } from "@/app/lib/google";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -109,6 +111,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 
   category: "entertainment",
+  verification: {
+    google: "G-8TQHNHJ2ZM",
+    yandex: "102611757",
+  },
 };
 
 export default function RootLayout({
@@ -123,6 +129,16 @@ export default function RootLayout({
       <body className={`${nunito.variable} ${poppins.variable} antialiased`}>
         {children}
         {modal}
+        <YandexMetrikaContainer />
+        <GoogleAnalytics id="G-8TQHNHJ2ZM" />
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-5JLSDV78"
+            height="0"
+            width="0"
+            className="invisible hidden"
+          ></iframe>
+        </noscript>
       </body>
     </html>
   );

@@ -91,7 +91,7 @@ export const Header = () => {
               ))}
             </ul>
           </nav>
-          <LinkUI className="hidden md:block" href="horrors/1">
+          <LinkUI className="hidden md:block" href="#reservation">
             Записаться
           </LinkUI>
           <Link href={"/burger"} className="block md:hidden">

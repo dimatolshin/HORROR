@@ -15,6 +15,7 @@ export default async function PopularSection({ horror }: PopularProps) {
             title="Популярные квесты"
             href="horrors/1"
             label="Смотреть все"
+            isPopular
           />
           <div className="grid gap-[50px] grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {horror.map((element) => (

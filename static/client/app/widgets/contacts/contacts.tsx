@@ -169,7 +169,7 @@ const Contacts = ({ location }: IContacts) => {
             <address className="border-3 border-solid border-[#FFFFFF47] not-italic gap-[37px] p-[30px] w-full text-white bg-[#20393A] flex justify-center flex-col rounded-4xl md:gap-[100px] lg:px-[61px]">
               {/* Логика отображения заголовка: не показываем его, если локация статична (на странице квеста) */}
               {!isStaticLocation && (
-                <h3 className="font-[800] text-2xl border-b-1 pb-[10px] md:text-6xl md:pb-[26px]">
+                <h3 className="font-[800] text-2xl border-b-1 pb-[10px] md:text-[40px] md:pb-[26px]">
                   {title}
                 </h3>
               )}

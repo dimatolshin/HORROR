@@ -15,6 +15,8 @@ import { queryClient } from "@/app/api/queryClient";
 import { useForm } from "react-hook-form";
 import { ReservScheme, ReservType } from "@/app/types/reserv";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { OnSuccess } from "../onSuccess/onSuccess";
 
 interface ReservationModalPromise extends IHorrorsPromise {
   price: number;
@@ -46,6 +48,7 @@ export const ReservationModal = ({
   const [useCertificate, setUseCertificate] = useState<boolean>(false);
   const [useYear, setUseYear] = useState<boolean>(false);
   const [useAgreement, setUseAgreement] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const calculatePrice = () => {
     return pricingPerPerson[numberOfPeople as keyof typeof pricingPerPerson];
@@ -91,8 +94,8 @@ export const ReservationModal = ({
         setUseCertificate(false);
         setUseAgreement(false);
         setUseYear(false);
+        setIsSuccess(true);
         reset();
-        onClose();
       },
     },
     queryClient
@@ -152,107 +155,127 @@ export const ReservationModal = ({
             </li>
           </ul>
         </div>
-        <form
-          onSubmit={handleSubmit((data) => {
-            reservMutate.mutate({
-              horror: questDetails.id,
-              data: questDetails.date_front,
-              phone: data.phone,
-              slot: questDetails.slot,
-              first_name: data.first_name,
-              last_name: data.last_name,
-              certificate: useCertificate,
-              comment: data.comment || "",
-              price: calculatePrice(),
-            });
-          })}
-          className="flex flex-col w-full p-6 sm:p-8 md:p-12 lg:p-16 overflow-y-auto"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <FormField errors={errors.first_name?.message} label="Имя">
-              <input
-                className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
-                type="text"
-                placeholder="Имя"
-                {...register("first_name")}
-              />
+        {!isSuccess ? (
+          <form
+            onSubmit={handleSubmit((data) => {
+              reservMutate.mutate({
+                horror: questDetails.id,
+                data: questDetails.date_front,
+                phone: data.phone,
+                slot: questDetails.slot,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                certificate: useCertificate,
+                comment: data.comment || "",
+                price: calculatePrice(),
+              });
+            })}
+            className="flex flex-col w-full p-6 sm:p-8 md:p-12 lg:p-16 overflow-y-auto"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <FormField errors={errors.first_name?.message} label="Имя">
+                <input
+                  className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                  type="text"
+                  placeholder="Имя"
+                  {...register("first_name")}
+                />
+              </FormField>
+              <FormField errors={errors.last_name?.message} label="Фамилия">
+                <input
+                  className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                  type="text"
+                  placeholder="Фамилия"
+                  {...register("last_name")}
+                />
+              </FormField>
+              <FormField errors={errors.phone?.message} label="Ваш телефон">
+                <input
+                  className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                  type="tel"
+                  placeholder="Ваш телефон"
+                  {...register("phone")}
+                />
+              </FormField>
+              <FormField label="Количество участников">
+                <div className="relative h-5 mb-4 text-xs">
+                  <span className="label left-[0%] absolute">1</span>
+                  <span className="label left-[24%] absolute">2</span>
+                  <span className="label left-[48%] absolute">3</span>
+                  <span className="label left-[72%] absolute">4</span>
+                  <span className="label left-[97%] absolute">5</span>
+                </div>
+                <input
+                  className="custom-range w-full"
+                  type="range"
+                  min={1}
+                  max={5}
+                  step={1}
+                  defaultValue={1}
+                  {...register("people")}
+                  onChange={(e) => setNumberOfPeople(Number(e.target.value))}
+                />
+              </FormField>
+            </div>
+            <Checkbox
+              className="my-4 sm:my-6"
+              checked={useCertificate}
+              {...register("certificate")}
+              onChange={(e) => setUseCertificate(e.target.checked)}
+              label="Использовать сертификат"
+            />
+            <FormField className="mb-auto" label="Комментарий">
+              <textarea
+                className="w-full bg-transparent pb-2 resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                placeholder="Введите ваш комментарий"
+                {...register("comment")}
+              ></textarea>
             </FormField>
-            <FormField errors={errors.last_name?.message} label="Фамилия">
-              <input
-                className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
-                type="text"
-                placeholder="Фамилия"
-                {...register("last_name")}
+            <div className="mt-6">
+              <Checkbox
+                error={errors.year?.message}
+                {...register("year")}
+                checked={useYear}
+                onChange={(e) => setUseYear(e.target.checked)}
+                className="mb-2"
+                label="Все игроки старше 14 лет"
               />
-            </FormField>
-            <FormField errors={errors.phone?.message} label="Ваш телефон">
-              <input
-                className="w-full bg-transparent pb-2 transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
-                type="tel"
-                placeholder="Ваш телефон"
-                {...register("phone")}
+              <Checkbox
+                error={errors.agreement?.message}
+                {...register("agreement")}
+                checked={useAgreement}
+                onChange={(e) => setUseAgreement(e.target.checked)}
+                label={
+                  <>
+                    Я согласен с{" "}
+                    <Link className="underline" href={"/agreement"}>
+                      Политикой обработки персональных данных
+                    </Link>{" "}
+                    и{" "}
+                    <Link className="underline" href={"/policy"}>
+                      пользовательским соглашением
+                    </Link>
+                  </>
+                }
               />
-            </FormField>
-            <FormField label="Количество участников">
-              <div className="relative h-5 mb-4 text-xs">
-                <span className="label left-[0%] absolute">1</span>
-                <span className="label left-[24%] absolute">2</span>
-                <span className="label left-[48%] absolute">3</span>
-                <span className="label left-[72%] absolute">4</span>
-                <span className="label left-[97%] absolute">5</span>
-              </div>
-              <input
-                className="custom-range w-full"
-                type="range"
-                min={1}
-                max={5}
-                step={1}
-                defaultValue={1}
-                {...register("people")}
-                onChange={(e) => setNumberOfPeople(Number(e.target.value))}
-              />
-            </FormField>
-          </div>
-          <Checkbox
-            className="my-4 sm:my-6"
-            checked={useCertificate}
-            {...register("certificate")}
-            onChange={(e) => setUseCertificate(e.target.checked)}
-            label="Использовать сертификат"
+            </div>
+            <div className="mt-6 min-h-[60px] sm:min-h-[98px] bg-[url(assets/webp/btn_bg.png)] bg-no-repeat bg-center bg-contain sm:bg-size-[100%_70%] flex items-end justify-center">
+              <button
+                className="text-white max-w-[181px] text-sm sm:text-lg py-2 px-4 sm:py-4 sm:px-6 cursor-pointer bg-(--red) rounded-lg"
+                type="submit"
+              >
+                Забронировать
+              </button>
+            </div>
+          </form>
+        ) : (
+          <OnSuccess
+            onClose={() => {
+              onClose();
+              setIsSuccess(false);
+            }}
           />
-          <FormField className="mb-auto" label="Комментарий">
-            <textarea
-              className="w-full bg-transparent pb-2 resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
-              placeholder="Введите ваш комментарий"
-              {...register("comment")}
-            ></textarea>
-          </FormField>
-          <div className="mt-6">
-            <Checkbox
-              error={errors.year?.message}
-              {...register("year")}
-              checked={useYear}
-              onChange={(e) => setUseYear(e.target.checked)}
-              className="mb-2"
-              label="Все игроки старше 14 лет"
-            />
-            <Checkbox
-              error={errors.agreement?.message}
-              {...register("agreement")}
-              checked={useAgreement}
-              onChange={(e) => setUseAgreement(e.target.checked)}
-              label="Я согласен с Политикой обработки персональных данных и пользовательским соглашением"
-            />
-          </div>
-          <div className="mt-6 min-h-[60px] sm:min-h-[98px] bg-[url(assets/webp/btn_bg.png)] bg-no-repeat bg-center bg-contain sm:bg-size-[100%_70%] flex items-end justify-center">
-            <button
-              className="text-white max-w-[181px] text-sm sm:text-lg py-2 px-4 sm:py-4 sm:px-6 cursor-pointer bg-(--red) rounded-lg"
-              type="submit"
-            >
-              Забронировать
-            </button>
-          </div>
-        </form>
+        )}
       </div>
     </Dialog>
   );

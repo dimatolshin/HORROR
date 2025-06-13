@@ -44,7 +44,7 @@ export const AboutList = () => {
               key={element.id}
               className="text-center relative min-h-[250px] flex items-end"
             >
-              <span className="absolute text-[#9CBABC] z-30 top-[26%] left-[50%] translate-x-[-50%] translate-y-[-80%] text-[70px] font-[700] md:text-[102px]">
+              <span className="absolute text-[#9CBABC] z-30 top-[24%] left-[50%] translate-x-[-50%] translate-y-[-80%] text-[70px] font-[700] md:text-[102px]">
                 {element.id}
               </span>
               <div className="mx-auto z-20 w-full bg-[#fff] rounded-2xl px-[27px] py-[35px] min-h-[200px] max-w-[calc(100%-5em)] flex flex-col justify-center gap-5">
@@ -60,7 +60,7 @@ export const AboutList = () => {
         <ul className="grid grid-cols-1 md:gap-y-[90px] lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-5">
           {CARD.map((element) => (
             <li key={element.id} className="text-center relative">
-              <span className="absolute text-[#9CBABC] z-30 top-[12%] left-[50%] translate-x-[-50%] translate-y-[-80%] text-[70px] font-[700] md:text-[102px]">
+              <span className="text-[#9CBABC] text-[70px] max-h-[120px] block font-[700] md:text-[102px]">
                 {element.id}
               </span>
               <div className="bg-[#fff] z-20 relative rounded-2xl px-[27px] py-[41px] min-h-[200px] flex flex-col justify-center gap-5">
