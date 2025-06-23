@@ -37,4 +37,6 @@ networks:
   nginx-proxy:
     external: false
   horror_horror_core:
-    external: true
+    external: true #указывает что созданная сетка вручную
+    
+
