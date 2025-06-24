@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app_horror.models import *
+from .models import *
 
 
 @admin.register(Horror)
@@ -38,3 +38,9 @@ class BackgroundPhotoCardAdmin(admin.ModelAdmin):
 class BlurPhotoAdmin(admin.ModelAdmin):
     """Регистрация в админ панели модели TimeSlot."""
     list_display = [field.name for field in BlurPhoto._meta.fields]
+
+
+@admin.register(TimeForHorror)
+class TimeForHorrorAdmin(admin.ModelAdmin):
+    """Регистрация в админ панели модели TimeSlot."""
+    list_display = [field.name for field in TimeForHorror._meta.fields]

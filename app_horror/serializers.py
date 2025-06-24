@@ -69,3 +69,5 @@ class TimeSlotSerializer(ModelSerializer):
     class Meta:
         model = TimeSlot
         fields = "__all__"
+
+
