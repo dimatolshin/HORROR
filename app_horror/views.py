@@ -1,11 +1,13 @@
 import locale
 from datetime import datetime, timedelta
 from adrf.views import APIView
+from asgiref.sync import sync_to_async
 from rest_framework import status
 from rest_framework.response import Response
-from .models import TimeSlot, Booking, Horror, TimeForHorror
+from .models import Booking, Horror, TimeForHorror
 from .serializers import HorrorSerializer, BookingSerializer, TimeSlotSerializer
 from rest_framework.permissions import AllowAny
+from .telegram import send_message
 
 
 class HorrorListView(APIView):
@@ -42,8 +44,8 @@ class AvailableSlotsView(APIView):
         # Генерируем список дат на 30 дней вперед
         dates = [today + timedelta(days=i) for i in range(30)]
         # Получаем все слоты
-        times=await TimeForHorror.objects.filter(horror__id=horror_id).prefetch_related('times').order_by(
-                'times__time').afirst()
+        times = await TimeForHorror.objects.filter(horror__id=horror_id).prefetch_related('times').order_by(
+            'times__time').afirst()
         slots = times.times.all()
         # Формируем ответ
         result = []
@@ -93,17 +95,38 @@ class BookingCreateView(APIView):
     """Представление для создания брони"""
     permission_classes = [AllowAny]
 
-    def post(self, request, *args, **kwargs):
-        print("Request data:", request.data)
-        # Получаем данные из тела запроса
-        serializer = BookingSerializer(data=request.data)
-        # Проверяем, что данные валидны
-        if serializer.is_valid():
-            # Создаем запись брони
-            booking = serializer.save()
-            return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
-        print("Serializer errors:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    async def post(self, request, *args, **kwargs):
+        peoples=[521662459,5235284862,605787781,602753713]
+        data = request.data
+        print("Request data:", data)
+
+        serializer = BookingSerializer(data=data)
+
+        try:
+            is_valid = await sync_to_async(serializer.is_valid)()
+
+            if is_valid:
+                booking = await sync_to_async(serializer.save)()
+
+                horror = await Horror.objects.filter(id=data.get('horror')).afirst()
+
+                msg = (
+                    f"Хорошая новость!\n\n"
+                    f"Вы получили бронь от - {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
+                    f"Квиз: {horror.name} был забронирован на {data.get('date', '')}\n\n"
+                    f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
+                    f"Цена: {data.get('price', '')}"
+                )
+                for id in peoples:
+                    await send_message(msg=msg,chat_id=id)
+                return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
+
+            print("Serializer errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print("Error:", str(e))
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SlotsListView(APIView):
