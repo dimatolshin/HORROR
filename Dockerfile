@@ -26,4 +26,4 @@ RUN pip install -r requirements.txt
 COPY . .
 # Запускаем Uvicorn сервер
 
-CMD ["sh", "-c", "python manage.py migrate && python app_horror/telegram.py & uvicorn horror_core.asgi:application --host 0.0.0.0"]
+CMD ["sh", "-c", "python manage.py migrate && uvicorn horror_core.asgi:application --host 0.0.0.0 & python app_horror/telegram.py"]
