@@ -23,6 +23,8 @@ services:
     networks:
       - horror_core
     container_name: api-quest-house
+    depends_on:
+      - db
     build:
       context: .
       dockerfile: Dockerfile
@@ -38,6 +40,8 @@ services:
       - TZ=Europe/Moscow   
 #    volumes:
 #      - /etc/letsencrypt:/etc/letsencrypt:ro
+    env_file:
+      - .env
     restart: unless-stopped
 
 networks:
