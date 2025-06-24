@@ -14,9 +14,9 @@ services:
     expose:
       - '8000'
     environment:
-      - VIRTUAL_HOST=api.boxy.skillbox.by
-      - LETSENCRYPT_HOST=api.boxy.skillbox.by
-      - LETSENCRYPT_EMAIL=lol@gmail.com
+      - VIRTUAL_HOST=api.quest-house.by
+      - LETSENCRYPT_HOST=api.quest-house.by
+      - LETSENCRYPT_EMAIL=1@1.com
       - TZ=Europe/Moscow   
 #    volumes:
 #      - /etc/letsencrypt:/etc/letsencrypt:ro
