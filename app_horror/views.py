@@ -42,7 +42,9 @@ class AvailableSlotsView(APIView):
         # Генерируем список дат на 30 дней вперед
         dates = [today + timedelta(days=i) for i in range(30)]
         # Получаем все слоты
-        slots = TimeSlot.objects.order_by("time")
+        times=await TimeForHorror.objects.filter(horror__id=horror_id).prefetch_related('times').order_by(
+                'times__time').afirst()
+        slots = times.times.all()
         # Формируем ответ
         result = []
         for date in dates:

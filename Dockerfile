@@ -25,4 +25,7 @@ RUN pip install -r requirements.txt
 # Копируем файлы и папки из папки CRM_system в рабочий каталог WORKDIR
 COPY . .
 # Запускаем Uvicorn сервер
+
+RUN python3 manage.py migrate
+
 CMD ["uvicorn", "horror_core.asgi:application", "--host", "0.0.0.0"]
