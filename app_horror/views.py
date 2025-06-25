@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from .models import Booking, Horror, TimeForHorror
 from .serializers import HorrorSerializer, BookingSerializer, TimeSlotSerializer
 from rest_framework.permissions import AllowAny
-from .telegram import send_message
+from telegram import send_message
 
 
 class HorrorListView(APIView):
@@ -96,7 +96,7 @@ class BookingCreateView(APIView):
     permission_classes = [AllowAny]
 
     async def post(self, request, *args, **kwargs):
-        peoples=[521662459,5235284862,605787781,602753713]
+        peoples=[521662459,883664955,5235284862,605787781,602753713]
         data = request.data
         print("Request data:", data)
 
@@ -118,7 +118,10 @@ class BookingCreateView(APIView):
                     f"Цена: {data.get('price', '')}"
                 )
                 for id in peoples:
-                    await send_message(msg=msg,chat_id=id)
+                    try:
+                        await send_message(msg=msg,chat_id=id)
+                    except Exception:
+                        continue
                 return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
             print("Serializer errors:", serializer.errors)

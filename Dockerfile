@@ -25,4 +25,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["sh", "-c", "python manage.py migrate && (python app_horror/telegram.py &) && uvicorn horror_core.asgi:application --host 0.0.0.0"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && \
+    uvicorn horror_core.asgi:application --workers 5 --host 0.0.0.0 --port 8000 & \
+    python telegram.py"]
