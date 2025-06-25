@@ -44,6 +44,16 @@ services:
       - .env
     restart: unless-stopped
 
+  tg_bot:
+    build: .
+    command: python telegram.py
+    depends_on:
+      - horror
+      - db
+    restart: unless-stopped
+    networks:
+      - horror_core
+
 networks:
   horror_core:
     driver: bridge
