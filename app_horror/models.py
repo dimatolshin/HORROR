@@ -94,7 +94,7 @@ class TimeForHorror(models.Model):
         verbose_name_plural = 'Время и квесты'
 
     def __str__(self):
-        if self.horror.name:
+        if self.horror:
             return f'id:{self.id},horror_name{self.horror.name}'
         else:
             return f''
