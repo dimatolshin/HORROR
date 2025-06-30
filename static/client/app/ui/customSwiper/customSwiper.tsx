@@ -92,7 +92,7 @@ export const CustomSwiper = ({
       <div
         className={`absolute z-20 pointer-events-none w-full ${
           isQuest
-            ? "top-[-65px] right-4 justify-end gap-[34px] hidden xl:flex"
+            ? "top-[-65px] max-w-[250px] right-4 justify-end gap-[34px] hidden xl:flex"
             : "top-1/2 -translate-y-1/2 justify-between px-1 flex xl:hidden"
         }`}
       >

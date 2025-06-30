@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { fetchHorrors } from "../api/horrors/fetchHorrors";
+import { getHorrors } from "../api/horrors/fetchHorrors";
 import HeroSection from "../pages/HomePage/HeroSection";
 import fetchReviews from "../api/reviews/fetchReviews";
 import PopularSection from "../pages/HomePage/PopularSection";
@@ -13,7 +13,7 @@ const ReservationSection = dynamic(
 const Contacts = dynamic(() => import("../widgets/contacts/contacts"));
 
 export default async function HomePage() {
-  const horrorsPromise = fetchHorrors();
+  const horrorsPromise = getHorrors();
   const reviewsPromise = fetchReviews();
 
   const [horrors, reviews] = await Promise.all([

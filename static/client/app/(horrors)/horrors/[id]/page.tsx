@@ -1,5 +1,9 @@
 import { api } from "@/app/api/api";
-import { fetchHorrors, fetchOneHorror } from "@/app/api/horrors/fetchHorrors";
+import {
+  fetchOneHorror,
+  getHorrors,
+  getOneHorror,
+} from "@/app/api/horrors/fetchHorrors";
 import fetchReviews from "@/app/api/reviews/fetchReviews";
 import ReviewsSection from "@/app/pages/HomePage/ReviewsSection";
 import HeroHorrorSection from "@/app/pages/OrderPage/HeroHorrorSection";
@@ -41,8 +45,8 @@ export default async function HorrorsPage({
 }) {
   const { id } = await params;
 
-  const horrorPromise = fetchOneHorror(id);
-  const allHorrorsPromise = fetchHorrors();
+  const horrorPromise = getOneHorror(id);
+  const allHorrorsPromise = getHorrors();
   const reviewsPromise = fetchReviews();
 
   const [currentHorror, horrors, reviews] = await Promise.all([
