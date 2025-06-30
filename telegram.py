@@ -149,7 +149,7 @@ async def main() -> None:
     # And the run events dispatching
     await dp.start_polling(bot)
 
-
+#
 async def send_message(msg, chat_id):
     async with AiohttpSession() as session:
         bot = Bot(token=TOKEN, session=session)
