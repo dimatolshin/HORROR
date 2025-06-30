@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15
@@ -29,7 +27,7 @@ services:
       context: .
       dockerfile: Dockerfile
     command: >
-      sh -c "python manage.py migrate &&:
+      sh -c "python manage.py migrate &&
              uvicorn horror_core.asgi:application --host 0.0.0.0"
     expose:
       - '8000'
@@ -37,9 +35,7 @@ services:
       - VIRTUAL_HOST=api.quest-house.by
       - LETSENCRYPT_HOST=api.quest-house.by
       - LETSENCRYPT_EMAIL=1@1.com
-      - TZ=Europe/Moscow   
-#    volumes:
-#      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - TZ=Europe/Moscow
     volumes:
       - media_data:/media
     env_file:
@@ -55,6 +51,9 @@ services:
     restart: unless-stopped
     networks:
       - horror_core
+
+volumes:
+  media_data:
 
 networks:
   horror_core:
