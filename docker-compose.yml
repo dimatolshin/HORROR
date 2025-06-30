@@ -40,6 +40,8 @@ services:
       - TZ=Europe/Moscow   
 #    volumes:
 #      - /etc/letsencrypt:/etc/letsencrypt:ro
+    volumes:
+      - media_data:/media
     env_file:
       - .env
     restart: unless-stopped
