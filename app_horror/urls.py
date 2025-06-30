@@ -1,5 +1,5 @@
 from django.urls import path
-from app_horror.views import HorrorListView, HorrorDetailView, AvailableSlotsView, BookingCreateView, SlotsListView
+from .views import HorrorListView, HorrorDetailView, AvailableSlotsView, BookingCreateView, SlotsListView
 
 urlpatterns = [
     path("horrors/", HorrorListView.as_view(), name="horror-list"),

@@ -1,10 +1,30 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    container_name: backend-postgres
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - /root/cms/storage/backend/postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - horror_core
+
   horror:
     networks:
       - horror_core
     container_name: api-quest-house
+    depends_on:
+      - db
     build:
       context: .
       dockerfile: Dockerfile
@@ -20,7 +40,19 @@ services:
       - TZ=Europe/Moscow   
 #    volumes:
 #      - /etc/letsencrypt:/etc/letsencrypt:ro
+    env_file:
+      - .env
     restart: unless-stopped
+
+  tg_bot:
+    build: .
+    command: python telegram.py
+    depends_on:
+      - horror
+      - db
+    restart: unless-stopped
+    networks:
+      - horror_core
 
 networks:
   horror_core:
