@@ -26,6 +26,8 @@ export interface IHorrorsPromise {
   travel_time: number;
 }
 
+let allHorrorsPromise: Promise<IHorrorsPromise[]>;
+
 export async function fetchHorrors(): Promise<IHorrorsPromise[]> {
   return await axios
     .get(`${api}/api/horrors`)
@@ -49,3 +51,10 @@ export async function fetchOneHorror(id: string): Promise<IHorrorsPromise> {
       console.error("Ошибка получения данных", err);
     });
 }
+
+async function refreshAllHorrors() {
+  allHorrorsPromise = fetchHorrors();
+}
+
+refreshAllHorrors();
+setInterval(refreshAllHorrors, 8 * 60 * 60 * 1000);
