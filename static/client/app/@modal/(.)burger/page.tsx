@@ -19,7 +19,7 @@ const NAV: INav[] = [
   },
   {
     id: "2",
-    path: "/horrors/1",
+    path: "/#popular",
     text: "Квесты",
   },
   {
