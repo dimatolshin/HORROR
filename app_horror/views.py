@@ -294,8 +294,8 @@ async def take_data_mir_kvestov(request):
 @api_view(["POST"])
 async def take_bitrix_data(request):
     print(request.data)
-    # booking_id = request.data['data']['ID']
-    # print(booking_id)
+    booking_id = request.POST.get('data[id]')
+    print("booking_id:",booking_id)
     # booking = await Booking.objects.filter(bitrix_booking_id=booking_id).afirst()
     #
     # if not booking:
@@ -310,7 +310,7 @@ async def take_bitrix_data(request):
     # booking.data = date
     # await booking.asave()
     #
-    # return Response({"success": True}, status=200)
+    return Response({"success": True}, status=200)
 
 
 @api_view(["GET"])
