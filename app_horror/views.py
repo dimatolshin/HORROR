@@ -66,7 +66,7 @@ class AvailableSlotsView(APIView):
                 # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
                 if slot_time == "23:50" and date.weekday() not in [4, 5]:  # 4 - пятница, 5 - суббота
                     continue
-                slots_for_date.append({"id":slot.id,"time": slot_time, "price": self.get_slot_price(slot_time, date),
+                slots_for_date.append({"id": slot.id, "time": slot_time, "price": self.get_slot_price(slot_time, date),
                                        "is_booked": slot.id in booked_slots})
             # Добавляем дату и слоты в результат
             result.append({"date": self.format_date(date), "date_front": date.isoformat(), "slots": slots_for_date})
@@ -143,9 +143,10 @@ class BookingCreateView(APIView):
                                             company_title=company_title,
                                             comments=comment, booking_start=formatted_booking_start,
                                             count_of_peoples=None)
-                booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+                result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
                 book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
                 book.bitrix_booking_id = booking_id
+                book.result_id = result_id
                 await book.asave()
                 return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
@@ -284,23 +285,24 @@ async def take_data_mir_kvestov(request):
     contact_id = await get_or_create_contact(name=name, phone=phone)
     deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id, company_title=source,
                                 comments=comment, booking_start=formatted_booking_start, count_of_peoples=None)
-    booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+    result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
     book = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
     book.bitrix_booking_id = booking_id
+    book.result_id = result_id
     await book.asave()
     return Response({"success": True}, status=200)
 
 
 @api_view(["POST"])
 async def take_bitrix_data(request):
-    booking_id = request.POST.get('data[id]')
-    print("booking_id:",booking_id)
-    booking = await Booking.objects.filter(bitrix_booking_id=booking_id).afirst()
+    result_id = request.POST.get('data[id]')
+    print("result_id:", result_id)
+    booking = await Booking.objects.filter(result_id=result_id).afirst()
 
     if not booking:
         return Response({"Error": 'Такой брони не существует'}, status=404)
 
-    date, start_time = await get_data_by_booking_id(booking_id=booking_id)
+    date, start_time = await get_data_by_booking_id(booking_id=booking.bitrix_booking_id)
 
     slot = await TimeSlot.objects.filter(time=start_time).afirst()
 
@@ -407,8 +409,9 @@ async def take_data_extrareality(request):
     contact_id = await get_or_create_contact(name=name, phone=phone)
     deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id, company_title=source,
                                 comments=comment, booking_start=formatted_booking_start, count_of_peoples=players_num)
-    booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+    result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
     book = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
     book.bitrix_booking_id = booking_id
+    book.result_id = result_id
     await book.asave()
     return Response({"success": True}, status=200)

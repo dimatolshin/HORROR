@@ -48,14 +48,14 @@ async def get_or_create_contact(name, phone):
     return data.get("result")
 
 
-async def create_deal(horror_name,amount, count_of_peoples, contact_id, company_title, booking_start,comments):
+async def create_deal(horror_name, amount, count_of_peoples, contact_id, company_title, booking_start, comments):
     if not count_of_peoples:
         count_of_peoples = None
     with open('bitrix.json', 'r') as file:
         data = json.load(file)
 
-    field=data[f"{horror_name}"].get('field')
-    resource_id=data[f"{horror_name}"].get('resource_id')
+    field = data[f"{horror_name}"].get('field')
+    resource_id = data[f"{horror_name}"].get('resource_id')
     seconds = data[f"{horror_name}"].get('seconds')
 
     payload = {
@@ -80,8 +80,7 @@ async def create_deal(horror_name,amount, count_of_peoples, contact_id, company_
     return resp.json().get('result')
 
 
-
-async def get_booking_id_by_deal(deal_id,horror_name):
+async def get_booking_id_by_deal(deal_id, horror_name):
     with open('bitrix.json', 'r') as file:
         data = json.load(file)
 
@@ -100,8 +99,9 @@ async def get_booking_id_by_deal(deal_id,horror_name):
     respt = requests.get(
         BITRIX24_WEBHOOK + f"calendar.resource.booking.list/?filter[resourceIdList][]={booking_id}")
     data = respt.json()
+    result_id = data['result'][0]['ID']
 
-    return data['result'][0]['ID']
+    return result_id, booking_id
 
 
 async def get_data_by_booking_id(booking_id):
@@ -112,10 +112,7 @@ async def get_data_by_booking_id(booking_id):
     date_str = data['result'][0]['DATE_FROM'].split(' ')[0]
     start_time_str = data['result'][0]['DATE_FROM'].split(' ')[1]
     date_obj = datetime.strptime(date_str, '%d.%m.%Y')
-    start_time=datetime.strptime(start_time_str, "%H:%M:%S")
+    start_time = datetime.strptime(start_time_str, "%H:%M:%S")
     date = date_obj.strftime('%Y-%m-%d')
 
     return date, start_time
-
-
-

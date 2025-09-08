@@ -116,6 +116,7 @@ class Booking(models.Model):
     comment = models.TextField(blank=True, null=True, verbose_name='Комментарий клиента')
     price = models.IntegerField(blank=True, null=True, verbose_name='Цена за квест')
     bitrix_booking_id = models.IntegerField(null=True, blank=True)
+    result_id= models.CharField(null=True,blank=True,verbose_name='ID Результат в календаре')
     order_id_mir_kvestov = models.CharField(null=True, blank=True)
     order_id_extrareality = models.CharField(null=True,blank=True)
 

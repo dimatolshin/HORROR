@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 webhook = "https://quest-house.bitrix24.by/rest/9/2ocnjfm34ikt3j43/"
 
@@ -21,3 +22,14 @@ print(respt.json())
 data = respt.json()
 print(data['result'][0]['ID'])
 
+respt1 = requests.get(
+    webhook + f"calendar.resource.booking.list/?filter[resourceIdList][]={booking_id}")
+print(respt.json())
+data = respt.json()
+date_str = data['result'][0]['DATE_FROM'].split(' ')[0]
+start_time_str = data['result'][0]['DATE_FROM'].split(' ')[1]
+date_obj = datetime.strptime(date_str, '%d.%m.%Y')
+start_time=datetime.strptime(start_time_str, "%H:%M:%S")
+date = date_obj.strftime('%Y-%m-%d')
+print('date:',date)
+print('start_time:',start_time)
