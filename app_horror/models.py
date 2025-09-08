@@ -22,6 +22,8 @@ class Horror(models.Model):
     genre = models.CharField(max_length=50, verbose_name='Жанр квеста')
     rules = models.TextField(blank=True, null=True, verbose_name='Правила посещения')
     is_active = models.BooleanField(default=True, verbose_name='Активность квеста')
+    id_mir_kvestov = models.BigIntegerField(null=True, blank=True)
+    id_extrareality = models.CharField(null=True,blank=True)
 
     class Meta:
         verbose_name = 'Квесты'
@@ -85,9 +87,9 @@ class TimeSlot(models.Model):
 class TimeForHorror(models.Model):
     times = models.ManyToManyField(TimeSlot, related_name='times_in_tfh', verbose_name='Время', null=True,
                                    blank=True)
-    horror = models.ForeignKey(Horror, related_name='horrors_in_tfh',on_delete=models.SET_NULL, verbose_name='Квест', null=True,
+    horror = models.ForeignKey(Horror, related_name='horrors_in_tfh', on_delete=models.SET_NULL, verbose_name='Квест',
+                               null=True,
                                blank=True)
-
 
     class Meta:
         verbose_name = 'Время и квесты'
@@ -113,6 +115,10 @@ class Booking(models.Model):
     certificate = models.BooleanField(default=False, verbose_name='Наличие сертификата')
     comment = models.TextField(blank=True, null=True, verbose_name='Комментарий клиента')
     price = models.IntegerField(blank=True, null=True, verbose_name='Цена за квест')
+    bitrix_booking_id = models.IntegerField(null=True, blank=True)
+    order_id_mir_kvestov = models.CharField(null=True, blank=True)
+    order_id_extrareality = models.CharField(null=True,blank=True)
+
 
     class Meta:
         """Один слот в день — только один раз"""

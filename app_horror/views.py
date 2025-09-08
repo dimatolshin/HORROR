@@ -4,10 +4,14 @@ from adrf.views import APIView
 from asgiref.sync import sync_to_async
 from rest_framework import status
 from rest_framework.response import Response
-from .models import Booking, Horror, TimeForHorror
+from .models import *
 from .serializers import HorrorSerializer, BookingSerializer, TimeSlotSerializer
 from rest_framework.permissions import AllowAny
 from telegram import send_message
+from adrf.decorators import api_view
+import pytz
+
+from bitrix import get_or_create_contact, create_deal, get_booking_id_by_deal, get_data_by_booking_id
 
 
 class HorrorListView(APIView):
@@ -96,9 +100,8 @@ class BookingCreateView(APIView):
     permission_classes = [AllowAny]
 
     async def post(self, request, *args, **kwargs):
-        peoples=[521662459,883664955,5235284862,605787781,602753713]
+        # peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
         data = request.data
-        print("Request data:", data)
 
         serializer = BookingSerializer(data=data)
 
@@ -109,6 +112,8 @@ class BookingCreateView(APIView):
                 booking = await sync_to_async(serializer.save)()
 
                 horror = await Horror.objects.filter(id=data.get('horror')).afirst()
+                # TODO check moment
+                time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
 
                 msg = (
                     f"Хорошая новость!\n\n"
@@ -117,11 +122,31 @@ class BookingCreateView(APIView):
                     f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
                     f"Цена: {data.get('price', '')}"
                 )
-                for id in peoples:
-                    try:
-                        await send_message(msg=msg,chat_id=id)
-                    except Exception:
-                        continue
+                # for id in peoples:
+                #     try:
+                #         await send_message(msg=msg, chat_id=id)
+                #     except Exception:
+                #         continue
+                print('data:', data.get('date', ''))
+                booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
+                print("booking_start", booking_start)
+                formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
+                print("formatted_booking_start:", formatted_booking_start)
+                name = f"{data.get('first_name', '')} {data.get('last_name', '')}"
+                phone = f"{data.get('phone', '')}"
+                price = f"{data.get('price', '')}"
+                comment = ''
+                company_title = 'My horror site'
+                contact_id = await get_or_create_contact(name=name, phone=phone)
+                print("contact_id:", contact_id)
+                deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id,
+                                            company_title=company_title,
+                                            comments=comment, booking_start=formatted_booking_start,
+                                            count_of_peoples=None)
+                booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+                book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
+                book.bitrix_booking_id = booking_id
+                await book.asave()
                 return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
             print("Serializer errors:", serializer.errors)
@@ -146,3 +171,244 @@ class SlotsListView(APIView):
             return Response(data)
         else:
             return Response({'Error': 'Данного квеста нет'}, status=status.HTTP_404_NOT_FOUND)
+
+
+async def get_slot_price(slot_time, booking_date):
+    """Функция возвращает цену для конкретного слота и даты"""
+    weekday = booking_date.weekday()  # 0 - Пн, 1 - Вт ... 6 - Вс
+    # Базовая цена
+    base_price = 110
+    # Если слот попадает в вечер пятницы, субботы или воскресенья (13:30 - 22:30)
+    if weekday in [4, 5, 6] and "13:30" <= slot_time <= "22:30":
+        return 120
+    # Если пятница или суббота и время 23:50
+    if weekday in [4, 5] and slot_time == "23:50":
+        return 140
+    return base_price
+
+
+async def format_date(date):
+    """Форматируем дату в формат '25 Ноября Пн'"""
+    # Устанавливаем локаль на русскую
+    locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
+    # Список названий дней недели
+    weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+    # Форматируем дату
+    return f"{date.day} {date.strftime('%B').capitalize()} {weekdays[date.weekday()]}"
+
+
+@api_view(["GET"])
+async def give_data_mir_kvestov(request, id_mir_kvestov):
+    today = datetime.today().date()
+    # Генерируем список дат на 30 дней вперед
+    dates = [today + timedelta(days=i) for i in range(14)]
+    horror = await Horror.objects.filter(id_mir_kvestov=id_mir_kvestov).afirst()
+    if not horror:
+        return Response({'Error': 'Horror not exist'}, status=404)
+    # Получаем все слоты
+    times = await TimeForHorror.objects.filter(horror__id_mir_kvestov=id_mir_kvestov).select_related(
+        'horror').prefetch_related('times').order_by(
+        'times__time').afirst()
+    slots = times.times.all()
+    # Формируем ответ
+    result = []
+    moskow_tz = pytz.timezone('Europe/Moscow')
+    current_time = datetime.now(moskow_tz)
+
+    for date in dates:
+        # Получаем забронированные слоты для текущей даты
+        booked_slots = []
+        async for slot_id in Booking.objects.filter(horror__id_mir_kvestov=id_mir_kvestov, data=date).select_related(
+                'horror').values_list("slot_id", flat=True).aiterator():
+            booked_slots.append(slot_id)
+
+        # Формируем слоты для текущей даты
+        async for slot in slots.aiterator():
+            slot_time = slot.time.strftime("%H:%M")
+
+            # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
+            if slot_time == "23:50" and date.weekday() not in [4, 5]:
+                continue
+
+            # Создаем datetime объект для слота в МОСКОВСКОМ времени
+            slot_datetime_naive = datetime.combine(date, slot.time)
+            slot_datetime = moskow_tz.localize(slot_datetime_naive)
+
+            # Проверяем, что слот еще не прошел
+            is_future_slot = slot_datetime > current_time
+
+            result.append({
+                "date": date.isoformat(),
+                "time": slot_time,
+                "price": await get_slot_price(slot_time, date),
+                "is_free": slot.id not in booked_slots and is_future_slot,
+                "your_slot_id": horror.id
+            })
+
+    return Response(result)
+
+
+@api_view(["POST"])
+async def take_data_mir_kvestov(request):
+    first_name = request.data["first_name"]
+    family_name = request.data["family_name"]
+    phone = request.data["phone"]
+    comment = request.data["comment"]
+    date = request.data["date"]
+    source = request.data["source"]
+    time = request.data["time"]
+    price = request.data["price"]
+    your_slot_id = request.data["your_slot_id"]
+    unique_id = request.data["unique_id"]
+
+    horror = await Horror.objects.filter(id=your_slot_id).afirst()
+    slot = await TimeSlot.objects.filter(time=time).afirst()
+
+    if not slot:
+        return Response({"success": False, "message": "Указанное время для брони не существует"}, status=404)
+
+    if not horror:
+        return Response({"success": False, "message": "Horror not exist"}, status=404)
+
+    booking = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
+
+    if booking:
+        return Response({"success": False, "message": "Указанное время занято"}, status=404)
+
+    await Booking.objects.acreate(horror=horror, data=date, slot=slot, first_name=first_name, last_name=family_name,
+                                  phone=phone, comment=comment, price=price, order_id_mir_kvestov=unique_id)
+
+    name = f'{first_name} {family_name}'
+    booking_start = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+    formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
+    contact_id = await get_or_create_contact(name=name, phone=phone)
+    deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id, company_title=source,
+                                comments=comment, booking_start=formatted_booking_start, count_of_peoples=None)
+    booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+    book = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
+    book.bitrix_booking_id = booking_id
+    await book.asave()
+    return Response({"success": True}, status=200)
+
+
+@api_view(["POST"])
+async def take_bitrix_data(request):
+    booking_id = request.data['data']['ID']
+    print(booking_id)
+    booking = await Booking.objects.filter(bitrix_booking_id=booking_id).afirst()
+
+    if not booking:
+        return Response({"Error": 'Такой брони не существует'}, status=404)
+
+    date, start_time = await get_data_by_booking_id(booking_id=booking_id)
+
+    slot = await TimeSlot.objects.filter(time=start_time).afirst()
+
+    if slot:
+        booking.slot = slot
+    booking.data = date
+    await booking.asave()
+
+    return Response({"success": True}, status=200)
+
+
+@api_view(["GET"])
+async def give_data_extrareality(request, id_extrareality):
+    today = datetime.today().date()
+    # Генерируем список дат на 30 дней вперед
+    dates = [today + timedelta(days=i) for i in range(30)]
+    horror = await Horror.objects.filter(id_extrareality=id_extrareality).afirst()
+    if not horror:
+        return Response({'Error': 'Horror not exist'}, status=404)
+    # Получаем все слоты
+    times = await TimeForHorror.objects.filter(horror__id_extrareality=id_extrareality).select_related(
+        'horror').prefetch_related('times').order_by(
+        'times__time').afirst()
+    slots = times.times.all()
+    # Формируем ответ
+    result = []
+    moskow_tz = pytz.timezone('Europe/Moscow')
+    current_time = datetime.now(moskow_tz)
+
+    for date in dates:
+        # Получаем забронированные слоты для текущей даты
+        booked_slots = []
+        async for slot_id in Booking.objects.filter(horror__id_extrareality=id_extrareality, data=date).select_related(
+                'horror').values_list("slot_id", flat=True).aiterator():
+            booked_slots.append(slot_id)
+
+        # Формируем слоты для текущей даты
+        async for slot in slots.aiterator():
+            slot_time = slot.time.strftime("%H:%M")
+
+            # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
+            if slot_time == "23:50" and date.weekday() not in [4, 5]:
+                continue
+
+            # Создаем datetime объект для слота в МОСКОВСКОМ времени
+            slot_datetime_naive = datetime.combine(date, slot.time)
+            slot_datetime = moskow_tz.localize(slot_datetime_naive)
+
+            # Проверяем, что слот еще не прошел
+            is_future_slot = slot_datetime > current_time
+
+            result.append({
+                "date": date.isoformat(),
+                "time": slot_time,
+                "is_free": slot.id not in booked_slots and is_future_slot,
+                "extraPrices": {
+                    "1": 110,
+                    "2": 120,
+                    "3": 130,
+                    "4": 140,
+                    "5": 150,
+                },
+                "our_time_id": horror.id_extrareality
+            })
+
+    return Response(result)
+
+
+@api_view(["POST"])
+async def take_data_extrareality(request):
+    comment = request.data["comment"]
+    data = request.data["datetime"]
+    name = request.data["name"]
+    phone = request.data["phone"]
+    players_num = int(request.data["players_num"])
+    source = request.data["source"]
+    price = request.data["price"]
+    uid = request.data["uid"]
+    id_extrareality = request.data["our_time_id"]
+
+    horror = await Horror.objects.filter(id_extrareality=id_extrareality).afirst()
+    date_str = data.split(" ")[0]
+    date = datetime.strptime(date_str, '%Y-%m-%d')
+    time = data.split(" ")[1]
+    slot = await TimeSlot.objects.filter(time=time).afirst()
+
+    if not slot:
+        return Response({"success": False, "message": "Указанное время для брони не существует"}, status=404)
+
+    if not horror:
+        return Response({"success": False, "message": "Horror not exist"}, status=404)
+
+    booking = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
+
+    if booking:
+        return Response({"success": False, "message": "Указанное время занято"}, status=404)
+
+    await Booking.objects.acreate(horror=horror, data=date, slot=slot, first_name=name, phone=phone, comment=comment,
+                                  price=price, order_id_extrareality=uid)
+
+    datetime_obj = datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
+    formatted_booking_start = datetime_obj.strftime("%d.%m.%Y %H:%M:%S")
+
+    contact_id = await get_or_create_contact(name=name, phone=phone)
+    deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id, company_title=source,
+                                comments=comment, booking_start=formatted_booking_start, count_of_peoples=players_num)
+    booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+    book = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
+    book.bitrix_booking_id = booking_id
+    await book.asave()
+    return Response({"success": True}, status=200)
