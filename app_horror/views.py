@@ -293,23 +293,24 @@ async def take_data_mir_kvestov(request):
 
 @api_view(["POST"])
 async def take_bitrix_data(request):
-    booking_id = request.data['data']['ID']
-    print(booking_id)
-    booking = await Booking.objects.filter(bitrix_booking_id=booking_id).afirst()
-
-    if not booking:
-        return Response({"Error": 'Такой брони не существует'}, status=404)
-
-    date, start_time = await get_data_by_booking_id(booking_id=booking_id)
-
-    slot = await TimeSlot.objects.filter(time=start_time).afirst()
-
-    if slot:
-        booking.slot = slot
-    booking.data = date
-    await booking.asave()
-
-    return Response({"success": True}, status=200)
+    print(request.data)
+    # booking_id = request.data['data']['ID']
+    # print(booking_id)
+    # booking = await Booking.objects.filter(bitrix_booking_id=booking_id).afirst()
+    #
+    # if not booking:
+    #     return Response({"Error": 'Такой брони не существует'}, status=404)
+    #
+    # date, start_time = await get_data_by_booking_id(booking_id=booking_id)
+    #
+    # slot = await TimeSlot.objects.filter(time=start_time).afirst()
+    #
+    # if slot:
+    #     booking.slot = slot
+    # booking.data = date
+    # await booking.asave()
+    #
+    # return Response({"success": True}, status=200)
 
 
 @api_view(["GET"])
