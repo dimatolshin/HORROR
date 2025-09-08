@@ -19,6 +19,5 @@ respt = requests.get(
     webhook + f"calendar.resource.booking.list/?filter[resourceIdList][]={booking_id}")
 print(respt.json())
 data = respt.json()
-
-
+print(data['result'][0]['ID'])
 

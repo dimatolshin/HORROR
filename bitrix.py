@@ -91,15 +91,17 @@ async def get_booking_id_by_deal(deal_id,horror_name):
         params={"id": deal_id}
     )
     data = resp.json()
-    print('data: ',data)
 
     if "result" not in data:
         raise Exception(f"Ошибка: {data}")
 
     booking_id = int(data["result"].get(f"{field}")[0])
-    print('booking_id:', booking_id)
 
-    return booking_id
+    respt = requests.get(
+        BITRIX24_WEBHOOK + f"calendar.resource.booking.list/?filter[resourceIdList][]={booking_id}")
+    data = respt.json()
+
+    return data['result'][0]['ID']
 
 
 async def get_data_by_booking_id(booking_id):
