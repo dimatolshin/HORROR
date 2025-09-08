@@ -66,7 +66,7 @@ class AvailableSlotsView(APIView):
                 # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
                 if slot_time == "23:50" and date.weekday() not in [4, 5]:  # 4 - пятница, 5 - суббота
                     continue
-                slots_for_date.append({"time": slot_time, "price": self.get_slot_price(slot_time, date),
+                slots_for_date.append({"id":slot.id,"time": slot_time, "price": self.get_slot_price(slot_time, date),
                                        "is_booked": slot.id in booked_slots})
             # Добавляем дату и слоты в результат
             result.append({"date": self.format_date(date), "date_front": date.isoformat(), "slots": slots_for_date})

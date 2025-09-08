@@ -82,7 +82,7 @@ export const ReservationTable = ({ quest }: ReservationProps) => {
                           setSelectedSlot({
                             time: item.time,
                             price: item.price,
-                            slot: index,
+                            slot: item.id,
                             date_front: element.date_front,
                           });
                           setIsDialogOpen(true);
