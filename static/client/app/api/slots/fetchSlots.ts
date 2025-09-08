@@ -5,7 +5,7 @@ export interface ISlotsFetch {
   date: string;
   date_front: string;
   slots: {
-    slot: number;
+    id: number;
     time: string;
     price: number;
     is_booked: boolean;
