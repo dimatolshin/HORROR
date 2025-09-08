@@ -21,7 +21,7 @@ export const HorrorSwiper = ({ photos }: HorrorSwiperProps) => {
   }));
 
   return (
-    <div className="flex flex-col max-w-full overflow-x-hidden">
+    <div className="flex flex-col max-w-full overflow-x-hidden w-full">
       <h2 className="border-b-1 mb-[30px] text-center md:text-left border-solid pb-[12px] md:mb-[38px] md:p-0 md:border-none md:text-[24px] text-white font-[700] text-2xl">
         Фотографии
       </h2>

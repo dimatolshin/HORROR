@@ -38,6 +38,15 @@ export async function fetchHorrors(): Promise<IHorrorsPromise[]> {
     });
 }
 
+export const getHorrors = async (): Promise<IHorrorsPromise[]> =>
+  await fetch(`${api}/api/horrors`, { next: { revalidate: 3600 } })
+    .then((response) => {
+      return response.json();
+    })
+    .catch((err) => {
+      console.error("Ошибка получения данных", err);
+    });
+
 export async function fetchOneHorror(id: string): Promise<IHorrorsPromise> {
   return await axios
     .get(`${api}/api/horrors/${id}`)
@@ -49,3 +58,12 @@ export async function fetchOneHorror(id: string): Promise<IHorrorsPromise> {
       console.error("Ошибка получения данных", err);
     });
 }
+
+export const getOneHorror = async (id: string): Promise<IHorrorsPromise> =>
+  await fetch(`${api}/api/horrors/${id}`, { next: { revalidate: 3600 } })
+    .then((response) => {
+      return response.json();
+    })
+    .catch((err) => {
+      console.error("Ошибка получения данных", err);
+    });
