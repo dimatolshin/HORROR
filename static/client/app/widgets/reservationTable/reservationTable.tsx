@@ -57,7 +57,7 @@ export const ReservationTable = ({ quest }: ReservationProps) => {
                   {parseDateString(element.date).weekday}
                 </span>
                 <div className="flex flex-wrap items-center gap-[7px]">
-                  {element.slots.map((item, index) => {
+                  {element.slots.map((item) => {
                     let bgColor = "";
 
                     switch (item.price) {
