@@ -118,7 +118,9 @@ class BookingCreateView(APIView):
                 msg = (
                     f"Хорошая новость!\n\n"
                     f"Вы получили бронь от - {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
-                    f"Квиз: {horror.name} был забронирован на {data.get('date', '')}\n\n"
+                    f"Телефон для связи{data.get('phone')}"
+                    f"Квиз: {horror.name} \n\n"
+                    f"Дата и время :{data.get('date', '')} {time.time} "
                     f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
                     f"Цена: {data.get('price', '')}"
                 )
@@ -294,10 +296,13 @@ async def take_data_mir_kvestov(request):
     msg = (
         f"Хорошая новость!\n\n"
         f"Вы получили бронь от - {name} \n\n"
-        f"Квиз: {horror.name} был забронирован на {date}\n\n"
+        f"Телефон для связи{phone}"
+        f"Квиз: {horror.name} \n\n"
+        f"Дата и время :{date} {time.time} "
         f"Комментарий от заказчика: {comment}\n\n"
         f"Цена: {price}"
     )
+
     for id in peoples:
         try:
             await send_message(msg=msg, chat_id=id)
@@ -369,7 +374,9 @@ async def create_bitrix_data(request):
         msg = (
             f"Хорошая новость!\n\n"
             f"Вы получили бронь от - {name} \n\n"
-            f"Квиз: {horror.name} был забронирован на {date}\n\n"
+            f"Телефон для связи{phone}"
+            f"Квиз: {horror.name} \n\n"
+            f"Дата и время :{date} {time.time} "
             f"Комментарий от заказчика: {comment}\n\n"
             f"Цена: {price}"
         )
@@ -486,7 +493,9 @@ async def take_data_extrareality(request):
     msg = (
         f"Хорошая новость!\n\n"
         f"Вы получили бронь от - {name} \n\n"
-        f"Квиз: {horror.name} был забронирован на {date}\n\n"
+        f"Телефон для связи{phone}"
+        f"Квиз: {horror.name} \n\n"
+        f"Дата и время :{date} {time.time} "
         f"Комментарий от заказчика: {comment}\n\n"
         f"Цена: {price}"
     )
