@@ -11,7 +11,7 @@ urlpatterns = [
     path('take_data_mir_kvestov/',take_data_mir_kvestov),
     path('take_bitrix_data/',take_bitrix_data),
     path('delete_bitrix_data/',delete_bitrix_data),
-    path('create_bitrix_data/',сreate_bitrix_data),
+    path('create_bitrix_data/',create_bitrix_data),
     path('give_data_extrareality/<int:id_extrareality>/',give_data_extrareality),
     path('take_data_extrareality/',take_data_extrareality),
 
