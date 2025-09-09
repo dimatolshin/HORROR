@@ -5,7 +5,7 @@ webhook = "https://quest-house.bitrix24.by/rest/9/2ocnjfm34ikt3j43/"
 
 resp = requests.get(
     webhook + "crm.deal.get.json",
-    params={"id": '213'}
+    params={"id": '215'}
 )
 data = resp.json()
 print('data: ', data)
@@ -29,7 +29,8 @@ data = respt.json()
 date_str = data['result'][0]['DATE_FROM'].split(' ')[0]
 start_time_str = data['result'][0]['DATE_FROM'].split(' ')[1]
 date_obj = datetime.strptime(date_str, '%d.%m.%Y')
-start_time=datetime.strptime(start_time_str, "%H:%M:%S")
+start_time = datetime.strptime(start_time_str, "%H:%M:%S")
 date = date_obj.strftime('%Y-%m-%d')
-print('date:',date)
-print('start_time:',start_time)
+print('date:', date)
+print('start_time:', start_time)
+

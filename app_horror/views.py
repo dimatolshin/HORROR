@@ -11,7 +11,8 @@ from telegram import send_message
 from adrf.decorators import api_view
 import pytz
 
-from bitrix import get_or_create_contact, create_deal, get_booking_id_by_deal, get_data_by_booking_id
+from bitrix import get_or_create_contact, create_deal, get_booking_id_by_deal, get_data_by_booking_id, \
+    get_name_by_booking_id
 
 
 class HorrorListView(APIView):
@@ -313,6 +314,7 @@ async def take_bitrix_data(request):
 
     return Response({"success": True}, status=200)
 
+
 @api_view(["POST"])
 async def delete_bitrix_data(request):
     result_id = request.POST.get('data[id]')
@@ -323,6 +325,31 @@ async def delete_bitrix_data(request):
         return Response({"Error": 'Такой брони не существует'}, status=404)
 
     await booking.adelete()
+
+    return Response({"success": True}, status=200)
+
+
+@api_view(["POST"])
+async def create_bitrix_data(request):
+    result_id = int(request.POST.get('data[id]'))
+    print("result_id:", result_id)
+    booking_id = result_id - 6
+    date, start_time = await get_data_by_booking_id(booking_id=booking_id)
+    name = await get_name_by_booking_id(booking_id=booking_id)
+
+    horror = await Horror.objects.filter(name=name).afirst()
+    if not horror:
+        return Response({'Error': 'Данного хорра не существует'}, status=404)
+
+    slot = await TimeSlot.objects.filter(time=start_time).afirst()
+    if not horror:
+        return Response({'Error': 'Данного времени не существует'}, status=404)
+
+    booking = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
+
+    if not booking:
+        await Booking.objects.acreate(horror=horror, data=date, slot=slot, bitrix_booking_id=booking_id,
+                                      result_id=result_id)
 
     return Response({"success": True}, status=200)
 

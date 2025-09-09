@@ -116,3 +116,10 @@ async def get_data_by_booking_id(booking_id):
     date = date_obj.strftime('%Y-%m-%d')
 
     return date, start_time
+
+async def get_name_by_booking_id(booking_id):
+    respt = requests.get(
+        BITRIX24_WEBHOOK + f"calendar.resource.booking.list/?filter[resourceIdList][]={booking_id}")
+    data = respt.json()
+    name = data['result'][0]['DESCRIPTION'].split(':')[1].replace(' ', '', 1)
+    return name
