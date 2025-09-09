@@ -126,20 +126,20 @@ async def get_name_by_booking_id(booking_id):
     return name
 
 
-async def get_client_id_and_price_and_count_peoples(result_id,name):
+async def get_client_id_and_price_and_count_peoples(booking_id,name):
     with open('bitrix.json', 'r') as file:
         data = json.load(file)
     resp = requests.get(
         BITRIX24_WEBHOOK + "crm.deal.list.json",
         params={
-            f"filter[{data[name]['field']}]": result_id,
+            f"filter[{data[name]['field']}]": booking_id,
             "select": ["*", "UF_*"]
         }
     )
     data = resp.json()
-    price = int(data['result'][0]['OPPORTUNITY'])
+    price = int(float(data['result'][0]['OPPORTUNITY']))
     client_id = int(data['result'][0]['CONTACT_ID'])
-    comment = int(data['result'][0]['COMMENTS'])
+    comment = data['result'][0]['COMMENTS'].strip()[3:-4]
 
     return price, client_id ,comment
 
