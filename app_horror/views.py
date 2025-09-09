@@ -360,7 +360,7 @@ async def create_bitrix_data(request):
     booking = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
 
     if not booking:
-        price, client_id, comment = await get_client_id_and_price_and_count_peoples(result_id)
+        price, client_id, comment = await get_client_id_and_price_and_count_peoples(result_id,name)
         name, phone = await get_name_and_phone_client(client_id)
         await Booking.objects.acreate(horror=horror, data=date, slot=slot, bitrix_booking_id=booking_id,
                                       result_id=result_id, first_name=name, phone=phone, price=price)
