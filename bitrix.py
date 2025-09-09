@@ -117,9 +117,38 @@ async def get_data_by_booking_id(booking_id):
 
     return date, start_time
 
+
 async def get_name_by_booking_id(booking_id):
     respt = requests.get(
         BITRIX24_WEBHOOK + f"calendar.resource.booking.list/?filter[resourceIdList][]={booking_id}")
     data = respt.json()
     name = data['result'][0]['DESCRIPTION'].split(':')[1].replace(' ', '', 1)
     return name
+
+
+async def get_client_id_and_price_and_count_peoples(result_id):
+    resp = requests.get(
+        BITRIX24_WEBHOOK + "crm.deal.list.json",
+        params={
+            "filter[UF_CRM_1756290524]": result_id,
+            "select": ["*", "UF_*"]
+        }
+    )
+    data = resp.json()
+    price = int(data['result'][0]['OPPORTUNITY'])
+    client_id = int(data['result'][0]['CONTACT_ID'])
+    comment = int(data['result'][0]['COMMENTS'])
+
+    return price, client_id ,comment
+
+async def get_name_and_phone_client(client_id):
+    contact_search = {
+        "filter": {"ID": client_id},
+        "select": ["NAME", "PHONE"]
+    }
+    resp = requests.post(BITRIX24_WEBHOOK + "crm.contact.list.json", json=contact_search)
+    data = resp.json()
+    name = data.get("result")[0]['NAME']
+    phone = data.get("result")[0]['PHONE'][0]['VALUE']
+
+    return name, phone

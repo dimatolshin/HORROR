@@ -11,8 +11,7 @@ from telegram import send_message
 from adrf.decorators import api_view
 import pytz
 
-from bitrix import get_or_create_contact, create_deal, get_booking_id_by_deal, get_data_by_booking_id, \
-    get_name_by_booking_id
+from bitrix import *
 
 
 class HorrorListView(APIView):
@@ -101,7 +100,7 @@ class BookingCreateView(APIView):
     permission_classes = [AllowAny]
 
     async def post(self, request, *args, **kwargs):
-        # peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+        peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
         data = request.data
 
         serializer = BookingSerializer(data=data)
@@ -113,7 +112,7 @@ class BookingCreateView(APIView):
                 booking = await sync_to_async(serializer.save)()
 
                 horror = await Horror.objects.filter(id=data.get('horror')).afirst()
-                # TODO check moment
+
                 time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
 
                 msg = (
@@ -123,11 +122,11 @@ class BookingCreateView(APIView):
                     f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
                     f"Цена: {data.get('price', '')}"
                 )
-                # for id in peoples:
-                #     try:
-                #         await send_message(msg=msg, chat_id=id)
-                #     except Exception:
-                #         continue
+                for id in peoples:
+                    try:
+                        await send_message(msg=msg, chat_id=id)
+                    except Exception:
+                        continue
                 print('data:', data.get('date', ''))
                 booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
                 print("booking_start", booking_start)
@@ -291,6 +290,19 @@ async def take_data_mir_kvestov(request):
     book.bitrix_booking_id = booking_id
     book.result_id = result_id
     await book.asave()
+    peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+    msg = (
+        f"Хорошая новость!\n\n"
+        f"Вы получили бронь от - {name} \n\n"
+        f"Квиз: {horror.name} был забронирован на {date}\n\n"
+        f"Комментарий от заказчика: {comment}\n\n"
+        f"Цена: {price}"
+    )
+    for id in peoples:
+        try:
+            await send_message(msg=msg, chat_id=id)
+        except Exception:
+            continue
     return Response({"success": True}, status=200)
 
 
@@ -348,8 +360,24 @@ async def create_bitrix_data(request):
     booking = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
 
     if not booking:
+        price, client_id, comment = await get_client_id_and_price_and_count_peoples(result_id)
+        name, phone = await get_name_and_phone_client(client_id)
         await Booking.objects.acreate(horror=horror, data=date, slot=slot, bitrix_booking_id=booking_id,
-                                      result_id=result_id)
+                                      result_id=result_id, first_name=name, phone=phone, price=price)
+
+        peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+        msg = (
+            f"Хорошая новость!\n\n"
+            f"Вы получили бронь от - {name} \n\n"
+            f"Квиз: {horror.name} был забронирован на {date}\n\n"
+            f"Комментарий от заказчика: {comment}\n\n"
+            f"Цена: {price}"
+        )
+        for id in peoples:
+            try:
+                await send_message(msg=msg, chat_id=id)
+            except Exception:
+                continue
 
     return Response({"success": True}, status=200)
 
@@ -454,4 +482,17 @@ async def take_data_extrareality(request):
     book.bitrix_booking_id = booking_id
     book.result_id = result_id
     await book.asave()
+    peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+    msg = (
+        f"Хорошая новость!\n\n"
+        f"Вы получили бронь от - {name} \n\n"
+        f"Квиз: {horror.name} был забронирован на {date}\n\n"
+        f"Комментарий от заказчика: {comment}\n\n"
+        f"Цена: {price}"
+    )
+    for id in peoples:
+        try:
+            await send_message(msg=msg, chat_id=id)
+        except Exception:
+            continue
     return Response({"success": True}, status=200)
