@@ -313,6 +313,19 @@ async def take_bitrix_data(request):
 
     return Response({"success": True}, status=200)
 
+@api_view(["POST"])
+async def delete_bitrix_data(request):
+    result_id = request.POST.get('data[id]')
+    print("result_id:", result_id)
+    booking = await Booking.objects.filter(result_id=result_id).afirst()
+
+    if not booking:
+        return Response({"Error": 'Такой брони не существует'}, status=404)
+
+    await booking.adelete()
+
+    return Response({"success": True}, status=200)
+
 
 @api_view(["GET"])
 async def give_data_extrareality(request, id_extrareality):
