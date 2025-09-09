@@ -298,7 +298,7 @@ async def take_data_mir_kvestov(request):
         f"Вы получили бронь от - {name} \n\n"
         f"Телефон для связи: {phone}"
         f"Квиз: {horror.name} \n\n"
-        f"Дата и время: {date} {time.time} "
+        f"Дата и время: {date} {slot.time} "
         f"Комментарий от заказчика: {comment}\n\n"
         f"Цена: {price}"
     )
@@ -376,7 +376,7 @@ async def create_bitrix_data(request):
             f"Вы получили бронь от - {name} \n\n"
             f"Телефон для связи: {phone}"
             f"Квиз: {horror.name} \n\n"
-            f"Дата и время: {date} {time.time} "
+            f"Дата и время: {date} {slot.time} "
             f"Комментарий от заказчика: {comment}\n\n"
             f"Цена: {price}"
         )
@@ -495,7 +495,7 @@ async def take_data_extrareality(request):
         f"Вы получили бронь от - {name} \n\n"
         f"Телефон для связи: {phone}"
         f"Квиз: {horror.name} \n\n"
-        f"Дата и время: {date} {time.time} "
+        f"Дата и время: {date} {slot.time} "
         f"Комментарий от заказчика: {comment}\n\n"
         f"Цена: {price}"
     )
