@@ -118,11 +118,11 @@ class BookingCreateView(APIView):
                 msg = (
                     f"Хорошая новость!\n\n"
                     f"Вы получили бронь от - {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
-                    f"Телефон для связи: {data.get('phone')}"
+                    f"Телефон для связи: {data.get('phone')}\n\n"
                     f"Квиз: {horror.name} \n\n"
-                    f"Дата и время: {data.get('date', '')} {time.time} "
+                    f"Дата и время: {data.get('date', '')} {time.time}\n\n"
                     f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
-                    f"Цена: {data.get('price', '')}"
+                    f"Цена: {data.get('price', '')}\n\n"
                 )
                 for id in peoples:
                     try:
@@ -296,11 +296,11 @@ async def take_data_mir_kvestov(request):
     msg = (
         f"Хорошая новость!\n\n"
         f"Вы получили бронь от - {name} \n\n"
-        f"Телефон для связи: {phone}"
+        f"Телефон для связи: {phone}\n\n"
         f"Квиз: {horror.name} \n\n"
-        f"Дата и время: {date} {slot.time} "
+        f"Дата и время: {date} {slot.time}\n\n"
         f"Комментарий от заказчика: {comment}\n\n"
-        f"Цена: {price}"
+        f"Цена: {price}\n\n"
     )
 
     for id in peoples:
@@ -374,11 +374,11 @@ async def create_bitrix_data(request):
         msg = (
             f"Хорошая новость!\n\n"
             f"Вы получили бронь от - {name} \n\n"
-            f"Телефон для связи: {phone}"
+            f"Телефон для связи: {phone}\n\n"
             f"Квиз: {horror.name} \n\n"
-            f"Дата и время: {date} {slot.time} "
+            f"Дата и время: {date} {slot.time}\n\n"
             f"Комментарий от заказчика: {comment}\n\n"
-            f"Цена: {price}"
+            f"Цена: {price}\n\n"
         )
         for id in peoples:
             try:
@@ -493,11 +493,11 @@ async def take_data_extrareality(request):
     msg = (
         f"Хорошая новость!\n\n"
         f"Вы получили бронь от - {name} \n\n"
-        f"Телефон для связи: {phone}"
-        f"Квиз: {horror.name} \n\n"
+        f"Телефон для связи: {phone}\n\n"
+        f"Квиз: {horror.name}\n\n"
         f"Дата и время: {date} {slot.time} "
         f"Комментарий от заказчика: {comment}\n\n"
-        f"Цена: {price}"
+        f"Цена: {price}\n\n"
     )
     for id in peoples:
         try:
