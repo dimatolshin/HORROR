@@ -104,6 +104,7 @@ class BookingCreateView(APIView):
         data = request.data
 
         serializer = BookingSerializer(data=data)
+        date = data.get('date')
 
         try:
             is_valid = await sync_to_async(serializer.is_valid)()
@@ -114,6 +115,10 @@ class BookingCreateView(APIView):
                 horror = await Horror.objects.filter(id=data.get('horror')).afirst()
 
                 time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
+
+                bron = await Booking.objects.filter(slot=time, horror=horror).afirst()
+                bron.data= date
+                await bron.asave()
 
                 msg = (
                     f"Хорошая новость!\n\n"
