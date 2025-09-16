@@ -100,7 +100,7 @@ class BookingCreateView(APIView):
     permission_classes = [AllowAny]
 
     async def post(self, request, *args, **kwargs):
-        peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+        peoples = [521662459, 5235284862, 605787781, 602753713]
         data = request.data
 
         serializer = BookingSerializer(data=data)
