@@ -116,9 +116,8 @@ class BookingCreateView(APIView):
 
                 time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
 
-                bron = await Booking.objects.filter(slot=time, horror=horror).afirst()
-                bron.data= date
-                await bron.asave()
+                book = await Booking.objects.filter(slot=time, horror=horror).afirst()
+                book.data= date
 
                 msg = (
                     f"Хорошая новость!\n\n"
@@ -151,11 +150,11 @@ class BookingCreateView(APIView):
                                             comments=comment, booking_start=formatted_booking_start,
                                             count_of_peoples=None)
                 result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-                book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
+
                 book.bitrix_booking_id = booking_id
                 book.result_id = result_id
                 await book.asave()
-                return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
+                return Response(BookingSerializer(book).data, status=status.HTTP_201_CREATED)
 
             print("Serializer errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
