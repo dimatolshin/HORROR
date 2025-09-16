@@ -52,9 +52,12 @@ services:
     networks:
       - horror_core
 
-volumes:
-  media_data:
 
 networks:
   horror_core:
     driver: bridge
+
+
+volumes:
+  media_data:
+    driver: local
