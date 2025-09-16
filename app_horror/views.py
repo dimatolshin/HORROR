@@ -104,7 +104,6 @@ class BookingCreateView(APIView):
         data = request.data
 
         serializer = BookingSerializer(data=data)
-        date = data.get('date')
 
         try:
             is_valid = await sync_to_async(serializer.is_valid)()
@@ -115,9 +114,6 @@ class BookingCreateView(APIView):
                 horror = await Horror.objects.filter(id=data.get('horror')).afirst()
 
                 time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
-
-                book = await Booking.objects.filter(slot=time, horror=horror).afirst()
-                book.data= date
 
                 msg = (
                     f"Хорошая новость!\n\n"
@@ -133,7 +129,7 @@ class BookingCreateView(APIView):
                         await send_message(msg=msg, chat_id=id)
                     except Exception:
                         continue
-                print('data:', data.get('date', ''))
+                print('data:', data.get('data', ''))
                 booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
                 print("booking_start", booking_start)
                 formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
@@ -150,11 +146,11 @@ class BookingCreateView(APIView):
                                             comments=comment, booking_start=formatted_booking_start,
                                             count_of_peoples=None)
                 result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-
+                book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
                 book.bitrix_booking_id = booking_id
                 book.result_id = result_id
                 await book.asave()
-                return Response(BookingSerializer(book).data, status=status.HTTP_201_CREATED)
+                return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
 
             print("Serializer errors:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
