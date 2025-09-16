@@ -11,12 +11,12 @@ interface IPravila {
 const PRAVILA: IPravila[] = [
   {
     id: "1",
-    path: "/policy",
+    path: "/agreement",
     label: "Пользовательское соглашение",
   },
   {
     id: "2",
-    path: "/agreement",
+    path: "/policy",
     label: "Политика обработки пресональных данных",
   },
 ];

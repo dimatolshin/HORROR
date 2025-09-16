@@ -14,7 +14,7 @@ export default function ReviewsSection({ reviews }: ReviewsSectionProps) {
           <TitleBlockUI
             title="Отзывы"
             label="Перейти к квестам"
-            href="horrors/1"
+            href="horrors/4"
           />
           <ReviewList review={reviews} />
         </div>

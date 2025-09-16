@@ -9,6 +9,7 @@ import { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
 
 interface IReview extends IReviewsPromise {
   className?: string;
+  nameQuest?: string;
 }
 
 const getFullYear = (date: string): string => {
@@ -27,6 +28,7 @@ export const ReviewUI = ({
   datetime,
   rating,
   className,
+  nameQuest
 }: IReview) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
@@ -54,10 +56,12 @@ export const ReviewUI = ({
           </span>
         </div>
       </div>
+      {nameQuest &&
       <div className={"flex flex-col text-[16px] pl-[10px] mb-[7px]"}>
-        <span className={"text-white"}>Перфоманс</span>
+        <span className={"text-white"}>{nameQuest}</span>
         <h3 className={"text-[#11B3D1]"}>Квест</h3>
       </div>
+      }
       <Image style={{ marginBottom: "8px" }} src={reviewQuote} alt="отзыв" />
       <div className="mb-auto">
         <blockquote className="mb-[17px] text-sm">

@@ -23,7 +23,6 @@ const renderStars = (rating: number) => {
 
 export const HorrorReviews = ({ review, rating }: IReviews) => {
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
-
   return (
     <>
       <div className="hidden max-w-[347px] w-full max-h-[376px] lg:block bg-[#20393A]/70 backdrop-blur-[12px] border-[3px] border-[#FFFFFF47] border-solid rounded-[36px] overflow-y-auto p-[24px] hide-scrollbar shrink-0">
@@ -48,6 +47,7 @@ export const HorrorReviews = ({ review, rating }: IReviews) => {
         </ul>
       </div>
       <ReviewsModal
+        review={review}
         dialogOpen={isOpenDialog}
         onClose={() => setIsOpenDialog(false)}
       />

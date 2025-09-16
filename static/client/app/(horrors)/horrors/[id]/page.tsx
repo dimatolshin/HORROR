@@ -47,7 +47,7 @@ export default async function HorrorsPage({
 
   const horrorPromise = getOneHorror(id);
   const allHorrorsPromise = getHorrors();
-  const reviewsPromise = fetchReviews();
+  const reviewsPromise = fetchReviews(id);
 
   const [currentHorror, horrors, reviews] = await Promise.all([
     horrorPromise,

@@ -24,17 +24,17 @@ const NAV: INav[] = [
   },
   {
     id: "3",
-    path: "#reservation",
+    path: "/#reservation",
     text: "Бронирование",
   },
   {
     id: "4",
-    path: "#reviews",
+    path: "/#reviews",
     text: "Отзывы",
   },
   {
     id: "5",
-    path: "#contacts",
+    path: "/#contacts",
     text: "Контакты",
   },
 ];

@@ -3,14 +3,8 @@
 import useCustomMediaQuery from "@/app/hooks/useCustomMediaQuery";
 import { CustomSwiper } from "@/app/ui/customSwiper/customSwiper";
 import { ReviewUI } from "@/app/ui/reviewUI/reviewUI";
+import {IReviewsPromise} from "@/app/api/reviews/fetchReviews";
 
-interface IReviewsPromise {
-  id: number;
-  datetime: string;
-  name: string;
-  text: string;
-  rating: number;
-}
 
 interface IReviews {
   review: IReviewsPromise[];
@@ -37,6 +31,7 @@ export const ReviewList = ({ review }: IReviews) => {
               name={element.name}
               text={element.text}
               rating={element.rating}
+              nameQuest={element.nameQuest}
             />
           ))}
         </CustomSwiper>
@@ -50,6 +45,7 @@ export const ReviewList = ({ review }: IReviews) => {
               name={element.name}
               text={element.text}
               rating={element.rating}
+              nameQuest={element.nameQuest}
             />
           ))}
         </div>
