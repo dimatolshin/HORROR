@@ -120,7 +120,7 @@ class BookingCreateView(APIView):
                     f"Вы получили бронь от - {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
                     f"Телефон для связи: {data.get('phone')}\n\n"
                     f"Квиз: {horror.name} \n\n"
-                    f"Дата и время: {data.get('date', '')} {time.time}\n\n"
+                    f"Дата и время: {data.get('data', '')} {time.time}\n\n"
                     f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
                     f"Цена: {data.get('price', '')}\n\n"
                 )
