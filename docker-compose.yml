@@ -53,3 +53,9 @@ services:
       - horror_core
 
 
+networks:
+  horror_core:
+    driver: bridge
+
+
+
