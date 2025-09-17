@@ -24,7 +24,7 @@ company_title = "МирКвестов"
 
 async def get_or_create_contact(name, phone):
     contact_search = {
-        "filter": {"PHONE": phone},
+        "filter": {"PHONE": phone,"NAME":name},
         "select": ["ID", "NAME", "PHONE"]
     }
     resp = requests.post(BITRIX24_WEBHOOK + "crm.contact.list.json", json=contact_search)

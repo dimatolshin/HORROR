@@ -37,7 +37,7 @@ services:
       - LETSENCRYPT_EMAIL=1@1.com
       - TZ=Europe/Moscow
     volumes:
-      - media_data:/media
+      - ./media:/horror_core/media
     env_file:
       - .env
     restart: unless-stopped
@@ -53,11 +53,3 @@ services:
       - horror_core
 
 
-networks:
-  horror_core:
-    driver: bridge
-
-
-volumes:
-  media_data:
-    driver: local
