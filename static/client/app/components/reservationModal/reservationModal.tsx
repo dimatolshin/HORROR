@@ -143,7 +143,7 @@ export const ReservationModal = ({
                 src={clock}
                 alt="время"
               />
-              <span>{questDetails.time}</span>
+              <span>{questDetails.date_front}</span>
             </li>
             <li className="w-full flex flex-col gap-2 items-center text-base sm:text-lg">
               <Image
