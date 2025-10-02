@@ -32,11 +32,12 @@ interface IModal {
 }
 
 const pricingPerPerson = {
-  1: 110,
-  2: 120,
-  3: 130,
-  4: 140,
-  5: 150,
+  1: 140,
+  2: 150,
+  3: 160,
+  4: 170,
+  5: 180,
+  6: 190,
 } as const;
 
 export const ReservationModal = ({
@@ -135,7 +136,7 @@ export const ReservationModal = ({
                 src={calendar}
                 alt="дата"
               />
-              <span>Дата</span>
+              <span>{questDetails.date_front}</span>
             </li>
             <li className="w-full flex flex-col gap-2 text-base sm:text-lg items-center md:border-b-1 border-solid md:pb-6">
               <Image
@@ -143,7 +144,7 @@ export const ReservationModal = ({
                 src={clock}
                 alt="время"
               />
-              <span>{questDetails.date_front}</span>
+              <span>{questDetails.time}</span>
             </li>
             <li className="w-full flex flex-col gap-2 items-center text-base sm:text-lg">
               <Image
@@ -199,34 +200,35 @@ export const ReservationModal = ({
               </FormField>
               <FormField label="Количество участников">
                 <div className="relative h-5 mb-4 text-xs">
-                  <span className="label left-[0%] absolute">1</span>
-                  <span className="label left-[24%] absolute">2</span>
-                  <span className="label left-[48%] absolute">3</span>
-                  <span className="label left-[72%] absolute">4</span>
-                  <span className="label left-[97%] absolute">5</span>
+                  <span className="label left-[0] absolute">1</span>
+                  <span className="label left-[20%] absolute">2</span>
+                  <span className="label left-[39%] absolute">3</span>
+                  <span className="label left-[58%] absolute">4</span>
+                  <span className="label left-[78%] absolute">5</span>
+                  <span className="label left-[97%] absolute">6</span>
                 </div>
                 <input
-                  className="custom-range w-full"
-                  type="range"
-                  min={1}
-                  max={5}
-                  step={1}
-                  defaultValue={1}
-                  {...register("people")}
-                  onChange={(e) => setNumberOfPeople(Number(e.target.value))}
+                    className="custom-range w-full"
+                    type="range"
+                    min={1}
+                    max={6}
+                    step={1}
+                    defaultValue={1}
+                    {...register("people")}
+                    onChange={(e) => setNumberOfPeople(Number(e.target.value))}
                 />
               </FormField>
             </div>
             <Checkbox
-              className="my-4 sm:my-6"
-              checked={useCertificate}
-              {...register("certificate")}
-              onChange={(e) => setUseCertificate(e.target.checked)}
-              label="Использовать сертификат"
+                className="my-4 sm:my-6"
+                checked={useCertificate}
+                {...register("certificate")}
+                onChange={(e) => setUseCertificate(e.target.checked)}
+                label="Использовать сертификат"
             />
             <FormField className="mb-auto" label="Комментарий">
               <textarea
-                className="w-full bg-transparent pb-2 resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                  className="w-full bg-transparent pb-2 resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                 placeholder="Введите ваш комментарий"
                 {...register("comment")}
               ></textarea>

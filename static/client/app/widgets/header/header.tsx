@@ -71,32 +71,42 @@ export const Header = () => {
     >
       <div className="container">
         <div className="flex items-center justify-between">
-          <Link href={"/"}>
-            <Image width={60} height={60} src={logo} alt="лого QuestHouse" />
-          </Link>
-          <nav className="nav hidden md:block">
-            <ul className="flex items-center gap-0.5 text-white">
-              {NAV.map((element) => (
-                <li key={element.id}>
-                  <Link
-                    className={`py-3.5 px-7 inline-block rounded-lg ${
-                      navValue === element.path && "bg-[#262626]"
-                    }`}
-                    href={element.path}
-                    onClick={() => setNavValue(element.path)}
-                  >
-                    {element.text}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <LinkUI className="hidden md:block" href="#reservation">
-            Записаться
-          </LinkUI>
-          <Link href={"/burger"} className="block md:hidden">
-            <Image src={burger} alt="burger" />
-          </Link>
+          <div className="flex items-center gap-20">
+            <Link href={"/"}>
+              <Image width={60} height={60} src={logo} alt="лого QuestHouse" />
+            </Link>
+            <nav className="nav hidden md:block">
+              <ul className="flex items-center gap-0.5 text-white">
+                {NAV.map((element) => (
+                  <li key={element.id}>
+                    <Link
+                      className={`py-3.5 px-7 inline-block rounded-lg ${
+                        navValue === element.path && "bg-[#262626]"
+                      }`}
+                      href={element.path}
+                      onClick={() => setNavValue(element.path)}
+                    >
+                      {element.text}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+          <div className="flex items-center gap-14 text-white">
+            <div className={"flex-col text-white hidden xl:flex"}>
+              <span className="text-[12px]">Телефон:</span>
+              <a className={"text-[16px] xl:text-[20px]"} href="tel:+(375) 445 33 02 78 ">
+                +(375) 445 33 02 78
+              </a>
+            </div>
+            <LinkUI className="hidden md:block" href="#reservation">
+              Записаться
+            </LinkUI>
+            <Link href={"/burger"} className="block md:hidden">
+              <Image src={burger} alt="burger"/>
+            </Link>
+          </div>
         </div>
       </div>
     </header>

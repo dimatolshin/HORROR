@@ -61,13 +61,13 @@ export const ReservationTable = ({ quest }: ReservationProps) => {
                     let bgColor = "";
 
                     switch (item.price) {
-                      case 110:
+                      case 130:
                         bgColor = "bg-[#11B3D1]";
                         break;
-                      case 120:
+                      case 140:
                         bgColor = "bg-[#0A8284]";
                         break;
-                      case 140:
+                      case 150:
                         bgColor = "bg-(--red)";
                         break;
                       default:

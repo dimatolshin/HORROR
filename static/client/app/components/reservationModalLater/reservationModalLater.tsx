@@ -22,11 +22,12 @@ interface IModal {
 }
 
 const pricingPerPerson = {
-  1: 110,
-  2: 120,
-  3: 130,
-  4: 140,
-  5: 150,
+  1: 140,
+  2: 150,
+  3: 160,
+  4: 170,
+  5: 180,
+  6: 190,
 } as const;
 
 export const ReservationModalLater = ({
@@ -111,7 +112,7 @@ export const ReservationModalLater = ({
               {questDetails.name}
             </h2>
           </div>
-          <div className="hidden sm:block overflow-y-auto max-h-[500px] w-full max-w-[300px] mx-auto">
+          <div className="hidden sm:block overflow-y-auto w-full max-w-[400px] mx-auto px-4">
             <MoreQuests />
           </div>
         </div>
@@ -175,18 +176,19 @@ export const ReservationModalLater = ({
               <FormField label="Количество участников">
                 <div className="relative h-[21px] mb-[15px]">
                   <span className="label left-[0] absolute">1</span>
-                  <span className="label left-[24%] absolute">2</span>
-                  <span className="label left-[48%] absolute">3</span>
-                  <span className="label left-[72%] absolute">4</span>
-                  <span className="label left-[97%] absolute">5</span>
+                  <span className="label left-[20%] absolute">2</span>
+                  <span className="label left-[39%] absolute">3</span>
+                  <span className="label left-[58%] absolute">4</span>
+                  <span className="label left-[78%] absolute">5</span>
+                  <span className="label left-[97%] absolute">6</span>
                 </div>
                 <input
-                  {...register("people")}
+                    {...register("people")}
                   className="custom-range"
                   type="range"
                   placeholder="Ваш телефон"
                   min={1}
-                  max={5}
+                  max={6}
                   step={1}
                   defaultValue={1}
                   onChange={(e) => setNumberOfPeople(Number(e.target.value))}
