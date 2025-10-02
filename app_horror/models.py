@@ -52,8 +52,8 @@ class BackgroundPhotoCard(models.Model):
     image = models.ImageField(upload_to="horrors/background_photo_card/")
 
     class Meta:
-        verbose_name = 'Задний фон для квеста'
-        verbose_name_plural = 'Задний фон для квеста'
+        verbose_name = 'Логотип для квеста'
+        verbose_name_plural = 'Логотип для квеста'
 
     def __str__(self):
         return f"Фото фона{self.horror.name}"
@@ -65,8 +65,8 @@ class BlurPhoto(models.Model):
     image = models.ImageField(upload_to="horrors/blur/")
 
     class Meta:
-        verbose_name = 'Логотип для квеста'
-        verbose_name_plural = 'Логотип для квеста'
+        verbose_name = 'Задний фон для квеста'
+        verbose_name_plural = 'Задний фон для квеста'
 
     def __str__(self):
         return f"Фото блюра{self.horror.name}"
