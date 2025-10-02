@@ -105,8 +105,8 @@ const BurgerModal = () => {
 
         <div className={"flex flex-col"}>
           <span className="text-[12px]">Телефон:</span>
-          <a className={"text-[20px]"} href="tel:+(375) 445 33 02 78 ">
-            +(375) 445 33 02 78
+          <a className={"text-[20px]"} href="tel:+375 (44) 533-02-78">
+            +375 (44) 533-02-78
           </a>
         </div>
       </div>

@@ -21,17 +21,17 @@ interface IPrice {
 const PRICE: IPrice[] = [
   {
     id: "1",
-    label: "110 Br",
+    label: "130 Br",
     color: "#11B3D1",
   },
   {
     id: "2",
-    label: "120 Br",
+    label: "140 Br",
     color: "#0A8284",
   },
   {
     id: "3",
-    label: "140 Br",
+    label: "150 Br",
     color: "#A40000",
   },
 ];

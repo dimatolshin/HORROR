@@ -112,8 +112,8 @@ export const HeaderHorror = () => {
             <div className="flex items-center gap-14 text-white">
               <div className={"flex-col text-white hidden xl:flex"}>
                 <span className="text-[12px]">Телефон:</span>
-                <a className={"text-[16px] xl:text-[20px]"} href="tel:+(375) 445 33 02 78 ">
-                  +(375) 445 33 02 78
+                <a className={"text-[16px] xl:text-[20px]"} href="tel:+375 (44) 533-02-78">
+                  +375 (44) 533-02-78
                 </a>
               </div>
               <LinkUI className="hidden md:block" href="#reservation">
