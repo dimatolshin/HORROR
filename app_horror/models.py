@@ -76,6 +76,9 @@ class TimeSlot(models.Model):
     """Модель временных слотов для бронирования квестов"""
     time = models.TimeField(unique=True)
 
+    # day=
+    # price=
+
     class Meta:
         verbose_name = 'Время'
         verbose_name_plural = 'Время'

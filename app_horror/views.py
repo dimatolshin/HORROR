@@ -20,7 +20,7 @@ class HorrorListView(APIView):
     async def get(self, request):
         horrors = []
         async for horror in Horror.objects.prefetch_related('photos', 'photos_back_card',
-                                                            'photos_blur').aiterator():  # Итерируем асинхронно
+                                                            'photos_blur').order_by('-is_active','id').aiterator():  # Итерируем асинхронно
             horrors.append(horror)
         data = HorrorSerializer(horrors, many=True).data  # Сериализуем все
         return Response(data)
@@ -48,9 +48,8 @@ class AvailableSlotsView(APIView):
         # Генерируем список дат на 30 дней вперед
         dates = [today + timedelta(days=i) for i in range(30)]
         # Получаем все слоты
-        times = await TimeForHorror.objects.filter(horror__id=horror_id).prefetch_related('times').order_by(
-            'times__time').afirst()
-        slots = times.times.all()
+        times = await TimeForHorror.objects.filter(horror__id=horror_id).prefetch_related('times').afirst()
+        slots = times.times.all().order_by('time')
         # Формируем ответ
         result = []
         for date in dates:
@@ -76,13 +75,13 @@ class AvailableSlotsView(APIView):
         """Функция возвращает цену для конкретного слота и даты"""
         weekday = booking_date.weekday()  # 0 - Пн, 1 - Вт ... 6 - Вс
         # Базовая цена
-        base_price = 110
+        base_price = 130
         # Если слот попадает в вечер пятницы, субботы или воскресенья (13:30 - 22:30)
         if weekday in [4, 5, 6] and "13:30" <= slot_time <= "22:30":
-            return 120
+            return 140
         # Если пятница или суббота и время 23:50
         if weekday in [4, 5] and slot_time == "23:50":
-            return 140
+            return 150
         return base_price
 
     def format_date(self, date):
