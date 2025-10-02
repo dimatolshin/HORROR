@@ -217,6 +217,12 @@ export const ReservationModal = ({
                     {...register("people")}
                     onChange={(e) => setNumberOfPeople(Number(e.target.value))}
                 />
+                {numberOfPeople === 6 && (
+                    <p className="text-[13px] text-[#A4A6A8] md:text-[16px] mt-4">
+                      (Бронирование действует при возрасте всех участников до 16 лет)
+                    </p>
+                  )
+                }
               </FormField>
             </div>
             <Checkbox

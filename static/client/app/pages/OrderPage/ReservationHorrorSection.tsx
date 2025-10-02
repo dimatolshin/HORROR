@@ -53,7 +53,7 @@ export default function ReservationHorrorSection({
               <hr className="w-full" />
               {horror.is_active ? (
                 <button
-                  onClick={() => setIsOpenDialog(false)}
+                  onClick={() => setIsOpenDialog(true)}
                   className="gap-2 text-[12px] shrink-0 px-[9px] sm:text-[18px] py-[6px] flex justify-center items-center bg-(--red) sm:py-4 sm:px-6 text-white rounded-lg cursor-pointer"
                 >
                   <Image width={24} height={24} src={calendar} alt={"photo"} />
