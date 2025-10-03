@@ -80,8 +80,8 @@ class AvailableSlotsView(APIView):
         if weekday in [4, 5, 6] and "13:30" <= slot_time <= "22:30":
             return 140
         # Если пятница или суббота и время 23:50
-        if weekday in [4, 5] and slot_time == "23:50":
-            return 150
+        if slot_time >= "23:30":
+            return 210
         return base_price
 
     def format_date(self, date):

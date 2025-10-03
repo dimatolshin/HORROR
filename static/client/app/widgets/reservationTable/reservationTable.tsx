@@ -67,7 +67,7 @@ export const ReservationTable = ({ quest }: ReservationProps) => {
                       case 140:
                         bgColor = "bg-[#0A8284]";
                         break;
-                      case 150:
+                      case 210:
                         bgColor = "bg-(--red)";
                         break;
                       default:
@@ -135,7 +135,7 @@ export const ReservationTable = ({ quest }: ReservationProps) => {
         questDetails={{
           ...quest,
           price: selectedSlot ? selectedSlot.price : 0,
-          time: selectedSlot ? selectedSlot?.time : "110",
+          time: selectedSlot ? selectedSlot?.time : "130",
           slot: selectedSlot ? selectedSlot?.slot : 0,
           date_front: selectedSlot ? selectedSlot.date_front : "",
         }}

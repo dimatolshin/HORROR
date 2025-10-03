@@ -34,7 +34,7 @@ const PRICE: IPrice[] = [
   },
   {
     id: "3",
-    label: "150 Br",
+    label: "210 Br",
     color: "#A40000",
   },
 ];
