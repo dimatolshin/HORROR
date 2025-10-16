@@ -24,7 +24,7 @@ company_title = "МирКвестов"
 
 async def get_or_create_contact(name, phone):
     contact_search = {
-        "filter": {"PHONE": phone,"NAME":name},
+        "filter": {"PHONE": phone, "NAME": name},
         "select": ["ID", "NAME", "PHONE"]
     }
     resp = requests.post(BITRIX24_WEBHOOK + "crm.contact.list.json", json=contact_search)
@@ -48,11 +48,16 @@ async def get_or_create_contact(name, phone):
     return data.get("result")
 
 
-async def create_deal(horror_name, amount, count_of_peoples, contact_id, company_title, booking_start, comments):
+async def create_deal(horror_name, amount, count_of_peoples, contact_id, company_title, booking_start, comments,
+                      old_person):
     if not count_of_peoples:
         count_of_peoples = None
     with open('bitrix.json', 'r') as file:
         data = json.load(file)
+    data_old = 'Информация о возросте не указана'
+
+    if old_person:
+        data_old = 'Все игроки старге 14 лет'
 
     field = data[f"{horror_name}"].get('field')
     resource_id = data[f"{horror_name}"].get('resource_id')
@@ -71,6 +76,7 @@ async def create_deal(horror_name, amount, count_of_peoples, contact_id, company
             "UF_CRM_1755698167": booking_start,  # дата/время
             f"{field}": f'resource|{resource_id}|{booking_start}|{seconds}|{horror_name}',
             "UF_CRM_1753868187382": count_of_peoples,  # количество участников
+            "UF_CRM_1753868194499": data_old, #Возраст
             "UF_CRM_1755782766": company_title,  # название компании
             "COMMENTS": comments,
         }
@@ -117,6 +123,11 @@ async def get_data_by_booking_id(booking_id):
 
     return date, start_time
 
+async def get_booking_id():
+    respt = requests.get(
+        BITRIX24_WEBHOOK + f"calendar.resource.list")
+    print(respt.json())
+
 
 async def get_name_by_booking_id(booking_id):
     respt = requests.get(
@@ -126,7 +137,7 @@ async def get_name_by_booking_id(booking_id):
     return name
 
 
-async def get_client_id_and_price_and_count_peoples(booking_id,name):
+async def get_client_id_and_price_and_count_peoples(booking_id, name):
     with open('bitrix.json', 'r') as file:
         data = json.load(file)
     resp = requests.get(
@@ -141,7 +152,8 @@ async def get_client_id_and_price_and_count_peoples(booking_id,name):
     client_id = int(data['result'][0]['CONTACT_ID'])
     comment = data['result'][0]['COMMENTS'].strip()[3:-4]
 
-    return price, client_id ,comment
+    return price, client_id, comment
+
 
 async def get_name_and_phone_client(client_id):
     contact_search = {

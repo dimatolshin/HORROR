@@ -1,4 +1,5 @@
 import locale
+import time
 from datetime import datetime, timedelta
 from adrf.views import APIView
 from asgiref.sync import sync_to_async
@@ -9,6 +10,7 @@ from .serializers import HorrorSerializer, BookingSerializer, TimeSlotSerializer
 from rest_framework.permissions import AllowAny
 from telegram import send_message
 from adrf.decorators import api_view
+from django.utils import timezone
 import pytz
 
 from bitrix import *
@@ -20,7 +22,8 @@ class HorrorListView(APIView):
     async def get(self, request):
         horrors = []
         async for horror in Horror.objects.prefetch_related('photos', 'photos_back_card',
-                                                            'photos_blur').order_by('-is_active','id').aiterator():  # Итерируем асинхронно
+                                                            'photos_blur').order_by('-is_active',
+                                                                                    'id').aiterator():  # Итерируем асинхронно
             horrors.append(horror)
         data = HorrorSerializer(horrors, many=True).data  # Сериализуем все
         return Response(data)
@@ -39,50 +42,88 @@ class HorrorDetailView(APIView):
         return Response(data)
 
 
+from django.db.models import Min, Avg, Max
+
+
 class AvailableSlotsView(APIView):
     """Получение свободных временных слотов для конкретного хоррора на 30 дней вперед"""
 
     async def get(self, request, horror_id):
-        # Получаем сегодняшнюю дату
         today = datetime.today().date()
-        # Генерируем список дат на 30 дней вперед
         dates = [today + timedelta(days=i) for i in range(30)]
-        # Получаем все слоты
-        times = await TimeForHorror.objects.filter(horror__id=horror_id).prefetch_related('times').afirst()
-        slots = times.times.all().order_by('time')
-        # Формируем ответ
         result = []
-        for date in dates:
-            # Получаем забронированные слоты для текущей даты (асинхронно)
-            booked_slots = []
-            async for slot_id in Booking.objects.filter(horror_id=horror_id, data=date).values_list("slot_id",
-                                                                                                    flat=True).aiterator():
-                booked_slots.append(slot_id)
-            # Формируем слоты для текущей даты
-            slots_for_date = []
-            async for slot in slots.aiterator():
-                slot_time = slot.time.strftime("%H:%M")
-                # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
-                if slot_time == "23:50" and date.weekday() not in [4, 5]:  # 4 - пятница, 5 - суббота
-                    continue
-                slots_for_date.append({"id": slot.id, "time": slot_time, "price": self.get_slot_price(slot_time, date),
-                                       "is_booked": slot.id in booked_slots})
-            # Добавляем дату и слоты в результат
-            result.append({"date": self.format_date(date), "date_front": date.isoformat(), "slots": slots_for_date})
-        return Response(result)
 
-    def get_slot_price(self, slot_time, booking_date):
-        """Функция возвращает цену для конкретного слота и даты"""
-        weekday = booking_date.weekday()  # 0 - Пн, 1 - Вт ... 6 - Вс
-        # Базовая цена
-        base_price = 130
-        # Если слот попадает в вечер пятницы, субботы или воскресенья (13:30 - 22:30)
-        if weekday in [4, 5, 6] and "13:30" <= slot_time <= "22:30":
-            return 140
-        # Если пятница или суббота и время 23:50
-        if slot_time >= "23:30":
-            return 210
-        return base_price
+        for date in dates:
+            weekday = date.weekday()
+            # Получаем уникальные времена для данного дня
+            times = (
+                await sync_to_async(list)(
+                    TimeSlot.objects.filter(
+                        times_in_tfh__horror__id=horror_id,
+                        day=weekday,
+                    )
+                    .values_list("time", flat=True)
+                    .distinct()
+                    .order_by("time")
+                )
+            )
+
+            # Список забронированных слотов
+            booked_slots = []
+            async for slot_id in Booking.objects.filter(
+                    horror_id=horror_id, data=date
+            ).values_list("slot_id", flat=True).aiterator():
+                booked_slots.append(slot_id)
+
+            slots_for_date = []
+            for slot_time in times:
+                # Получаем все варианты для данного времени
+                price_and_count = TimeSlot.objects.filter(
+                    times_in_tfh__horror__id=horror_id,
+                    day=weekday,
+                    time=slot_time
+                ).order_by("count_of_peoples")
+
+                info = []
+                async for item in price_and_count.aiterator():
+                    info.append({
+                        "count_of_peoples": item.count_of_peoples,
+                        "price": item.price
+                    })
+
+                # Берём первый слот только для получения id (если нужно)
+                current_flag = False
+                first_slot = await price_and_count.afirst()
+                if date == today:
+                    future_datetime = timezone.now() + timedelta(minutes=30)
+                    slot_datetime = timezone.make_aware(
+                        datetime.combine(timezone.now().date(), slot_time)
+                    )
+                    current_flag = future_datetime > slot_datetime
+                if current_flag:
+                    flag = True
+
+                if not current_flag and first_slot.id in booked_slots:
+                    flag = True
+
+                if not current_flag and first_slot.id not in booked_slots:
+                    flag = False
+
+                slots_for_date.append({
+                    "id": first_slot.id if first_slot else None,
+                    "time": slot_time.strftime("%H:%M"),
+                    "info": info,
+                    "color": first_slot.color,
+                    "is_booked": flag,
+                })
+
+            result.append({
+                "date": self.format_date(date),
+                "date_front": date.isoformat(),
+                "slots": slots_for_date
+            })
+
+        return Response(result)
 
     def format_date(self, date):
         """Форматируем дату в формат '25 Ноября Пн'"""
@@ -100,8 +141,8 @@ class BookingCreateView(APIView):
 
     async def post(self, request, *args, **kwargs):
         peoples = [521662459, 5235284862, 605787781, 602753713]
-        data = request.data
-
+        data = request.data.copy()
+        old_person = data.pop("old_person", False)
         serializer = BookingSerializer(data=data)
 
         try:
@@ -115,13 +156,15 @@ class BookingCreateView(APIView):
                 time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
 
                 msg = (
-                    f"Хорошая новость!\n\n"
-                    f"Вы получили бронь от - {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
-                    f"Телефон для связи: {data.get('phone')}\n\n"
-                    f"Квиз: {horror.name} \n\n"
-                    f"Дата и время: {data.get('data', '')} {time.time}\n\n"
-                    f"Комментарий от заказчика: {data.get('comment', '')}\n\n"
-                    f"Цена: {data.get('price', '')}\n\n"
+                    f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
+                    f"Дата игры: {data.get('data', '')} {time.time}\n\n"
+                    f"Имя: {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
+                    f"Телефон: {data.get('phone')}\n\n"
+                    f"Стоимость: {data.get('price', '')}\n\n"
+                    f"Выбранный режим:  Игра для {data.get('count_of_peoples')} человек \n\n"
+                    f"Комментарий: {data.get('comment', '')}\n\n"
+                    f"Источник: quest-house.by\n\n"
+
                 )
                 for id in peoples:
                     try:
@@ -136,14 +179,14 @@ class BookingCreateView(APIView):
                 name = f"{data.get('first_name', '')} {data.get('last_name', '')}"
                 phone = f"{data.get('phone', '')}"
                 price = f"{data.get('price', '')}"
-                comment = ''
+                comment = data.get('comment', '')
                 company_title = 'My horror site'
                 contact_id = await get_or_create_contact(name=name, phone=phone)
                 print("contact_id:", contact_id)
                 deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id,
                                             company_title=company_title,
                                             comments=comment, booking_start=formatted_booking_start,
-                                            count_of_peoples=None)
+                                            count_of_peoples=data.get('count_of_peoples'), old_person=old_person)
                 result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
                 book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
                 book.bitrix_booking_id = booking_id
@@ -175,83 +218,84 @@ class SlotsListView(APIView):
             return Response({'Error': 'Данного квеста нет'}, status=status.HTTP_404_NOT_FOUND)
 
 
-async def get_slot_price(slot_time, booking_date):
-    """Функция возвращает цену для конкретного слота и даты"""
-    weekday = booking_date.weekday()  # 0 - Пн, 1 - Вт ... 6 - Вс
-    # Базовая цена
-    base_price = 110
-    # Если слот попадает в вечер пятницы, субботы или воскресенья (13:30 - 22:30)
-    if weekday in [4, 5, 6] and "13:30" <= slot_time <= "22:30":
-        return 120
-    # Если пятница или суббота и время 23:50
-    if weekday in [4, 5] and slot_time == "23:50":
-        return 140
-    return base_price
-
-
-async def format_date(date):
-    """Форматируем дату в формат '25 Ноября Пн'"""
-    # Устанавливаем локаль на русскую
-    locale.setlocale(locale.LC_TIME, "ru_RU.UTF-8")
-    # Список названий дней недели
-    weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-    # Форматируем дату
-    return f"{date.day} {date.strftime('%B').capitalize()} {weekdays[date.weekday()]}"
-
-
 @api_view(["GET"])
 async def give_data_mir_kvestov(request, id_mir_kvestov):
     today = datetime.today().date()
-    # Генерируем список дат на 30 дней вперед
     dates = [today + timedelta(days=i) for i in range(14)]
+    result = []
     horror = await Horror.objects.filter(id_mir_kvestov=id_mir_kvestov).afirst()
     if not horror:
         return Response({'Error': 'Horror not exist'}, status=404)
-    # Получаем все слоты
-    times = await TimeForHorror.objects.filter(horror__id_mir_kvestov=id_mir_kvestov).select_related(
-        'horror').prefetch_related('times').order_by(
-        'times__time').afirst()
-    slots = times.times.all()
-    # Формируем ответ
-    result = []
-    moskow_tz = pytz.timezone('Europe/Moscow')
-    current_time = datetime.now(moskow_tz)
 
     for date in dates:
-        # Получаем забронированные слоты для текущей даты
+        weekday = date.weekday()
+        # Получаем уникальные времена для данного дня
+        times = (
+            await sync_to_async(list)(
+                TimeSlot.objects.filter(
+                    times_in_tfh__horror__id_mir_kvestov=id_mir_kvestov,
+                    day=weekday,
+                )
+                .values_list("time", flat=True)
+                .distinct()
+                .order_by("time")
+            )
+        )
+
+        # Список забронированных слотов
         booked_slots = []
-        async for slot_id in Booking.objects.filter(horror__id_mir_kvestov=id_mir_kvestov, data=date).select_related(
-                'horror').values_list("slot_id", flat=True).aiterator():
+        async for slot_id in Booking.objects.filter(
+                horror__id_mir_kvestov=id_mir_kvestov, data=date
+        ).values_list("slot_id", flat=True).aiterator():
             booked_slots.append(slot_id)
 
-        # Формируем слоты для текущей даты
-        async for slot in slots.aiterator():
-            slot_time = slot.time.strftime("%H:%M")
+        slots_for_date = []
+        for slot_time in times:
+            # Получаем все варианты для данного времени
+            price_and_count = TimeSlot.objects.filter(
+                times_in_tfh__horror__id_mir_kvestov=id_mir_kvestov,
+                day=weekday,
+                time=slot_time
+            ).order_by("count_of_peoples")
 
-            # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
-            if slot_time == "23:50" and date.weekday() not in [4, 5]:
-                continue
+            info = []
+            async for item in price_and_count.aiterator():
+                info.append({
+                    "count_of_peoples": item.count_of_peoples,
+                    "price": item.price
+                })
 
-            # Создаем datetime объект для слота в МОСКОВСКОМ времени
-            slot_datetime_naive = datetime.combine(date, slot.time)
-            slot_datetime = moskow_tz.localize(slot_datetime_naive)
+            # Берём первый слот только для получения id (если нужно)
+            current_flag = False
+            first_slot = await price_and_count.afirst()
+            if date == today:
+                future_datetime = timezone.now() + timedelta(minutes=30)
+                slot_datetime = timezone.make_aware(
+                    datetime.combine(timezone.now().date(), slot_time)
+                )
+                current_flag = future_datetime > slot_datetime
+            if current_flag:
+                flag = False
 
-            # Проверяем, что слот еще не прошел
-            is_future_slot = slot_datetime > current_time
+            if not current_flag and first_slot.id in booked_slots:
+                flag = False
+
+            if not current_flag and first_slot.id not in booked_slots:
+                flag = True
 
             result.append({
                 "date": date.isoformat(),
                 "time": slot_time,
-                "price": await get_slot_price(slot_time, date),
-                "is_free": slot.id not in booked_slots and is_future_slot,
-                "your_slot_id": horror.id
+                "price": info[0]['price'],
+                "is_free": flag,
+                "your_slot_id": weekday
             })
 
     return Response(result)
 
 
 @api_view(["POST"])
-async def take_data_mir_kvestov(request):
+async def take_data_mir_kvestov(request, id_mir_kvestov):
     first_name = request.data["first_name"]
     family_name = request.data["family_name"]
     phone = request.data["phone"]
@@ -260,11 +304,11 @@ async def take_data_mir_kvestov(request):
     source = request.data["source"]
     time = request.data["time"]
     price = request.data["price"]
-    your_slot_id = request.data["your_slot_id"]
+    day = request.data["your_slot_id"]
     unique_id = request.data["unique_id"]
 
-    horror = await Horror.objects.filter(id=your_slot_id).afirst()
-    slot = await TimeSlot.objects.filter(time=time).afirst()
+    horror = await Horror.objects.filter(id=id_mir_kvestov).afirst()
+    slot = await TimeSlot.objects.filter(time=time, day=day).afirst()
 
     if not slot:
         return Response({"success": False, "message": "Указанное время для брони не существует"}, status=404)
@@ -285,21 +329,24 @@ async def take_data_mir_kvestov(request):
     formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
     contact_id = await get_or_create_contact(name=name, phone=phone)
     deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id, company_title=source,
-                                comments=comment, booking_start=formatted_booking_start, count_of_peoples=None)
+                                comments=comment, booking_start=formatted_booking_start, count_of_peoples=None,
+                                old_person=False)
     result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
     book = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
     book.bitrix_booking_id = booking_id
     book.result_id = result_id
     await book.asave()
     peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+
     msg = (
-        f"Хорошая новость!\n\n"
-        f"Вы получили бронь от - {name} \n\n"
-        f"Телефон для связи: {phone}\n\n"
-        f"Квиз: {horror.name} \n\n"
-        f"Дата и время: {date} {slot.time}\n\n"
-        f"Комментарий от заказчика: {comment}\n\n"
-        f"Цена: {price}\n\n"
+        f"Поступила бронь на квест '{horror.name}' (ID брони {unique_id})\n\n"
+        f"Дата игры: {date} {slot.time}\n\n"
+        f"Имя: {name}\n\n"
+        f"Телефон: {phone}\n\n"
+        f"Стоимость: {price}\n\n"
+        f"Комментарий: {comment}\n\n"
+        f"Источник: Мир Квестов\n\n"
+
     )
 
     for id in peoples:
@@ -348,9 +395,21 @@ async def delete_bitrix_data(request):
 @api_view(["POST"])
 async def create_bitrix_data(request):
     result_id = int(request.POST.get('data[id]'))
-    print("result_id:", result_id)
-    booking_id = result_id - 6
-    date, start_time = await get_data_by_booking_id(booking_id=booking_id)
+    my_count = 8
+    max_attempts = 10
+    attempts = 0
+    while attempts < max_attempts:
+        try:
+            booking_id = result_id - my_count
+            date, start_time = await get_data_by_booking_id(booking_id=booking_id)
+            break
+        except Exception:
+            my_count += 2
+            attempts += 1
+            print(f"Попытка {attempts}: booking_id {booking_id} не найден, увеличиваем счетчик")
+    else:
+        print("Не удалось найти подходящий booking_id после всех попыток")
+
     name = await get_name_by_booking_id(booking_id=booking_id)
 
     horror = await Horror.objects.filter(name=name).afirst()
@@ -364,20 +423,23 @@ async def create_bitrix_data(request):
     booking = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
 
     if not booking:
-        price, client_id, comment = await get_client_id_and_price_and_count_peoples(booking_id,name)
+        price, client_id, comment = await get_client_id_and_price_and_count_peoples(booking_id, name)
         name, phone = await get_name_and_phone_client(client_id)
         await Booking.objects.acreate(horror=horror, data=date, slot=slot, bitrix_booking_id=booking_id,
                                       result_id=result_id, first_name=name, phone=phone, price=price)
+        booking = await Booking.objects.filter(horror=horror, data=date, slot=slot,
+                                               bitrix_booking_id=booking_id).afirst()
 
         peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
         msg = (
-            f"Хорошая новость!\n\n"
-            f"Вы получили бронь от - {name} \n\n"
-            f"Телефон для связи: {phone}\n\n"
-            f"Квиз: {horror.name} \n\n"
-            f"Дата и время: {date} {slot.time}\n\n"
-            f"Комментарий от заказчика: {comment}\n\n"
-            f"Цена: {price}\n\n"
+            f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
+            f"Дата игры: {date} {slot.time}\n\n"
+            f"Имя: {name}\n\n"
+            f"Телефон: {phone}\n\n"
+            f"Стоимость: {price}\n\n"
+            f"Комментарий: {comment}\n\n"
+            f"Источник: Bitrix\n\n"
+
         )
         for id in peoples:
             try:
@@ -391,62 +453,78 @@ async def create_bitrix_data(request):
 @api_view(["GET"])
 async def give_data_extrareality(request, id_extrareality):
     today = datetime.today().date()
-    # Генерируем список дат на 30 дней вперед
-    dates = [today + timedelta(days=i) for i in range(30)]
+    dates = [today + timedelta(days=i) for i in range(14)]
+    result = []
     horror = await Horror.objects.filter(id_extrareality=id_extrareality).afirst()
     if not horror:
         return Response({'Error': 'Horror not exist'}, status=404)
-    # Получаем все слоты
-    times = await TimeForHorror.objects.filter(horror__id_extrareality=id_extrareality).select_related(
-        'horror').prefetch_related('times').order_by(
-        'times__time').afirst()
-    slots = times.times.all()
-    # Формируем ответ
-    result = []
-    moskow_tz = pytz.timezone('Europe/Moscow')
-    current_time = datetime.now(moskow_tz)
 
     for date in dates:
-        # Получаем забронированные слоты для текущей даты
+        weekday = date.weekday()
+        # Получаем уникальные времена для данного дня
+        times = (
+            await sync_to_async(list)(
+                TimeSlot.objects.filter(
+                    times_in_tfh__horror__id_extrareality=id_extrareality,
+                    day=weekday,
+                )
+                .values_list("time", flat=True)
+                .distinct()
+                .order_by("time")
+            )
+        )
+
+        # Список забронированных слотов
         booked_slots = []
-        async for slot_id in Booking.objects.filter(horror__id_extrareality=id_extrareality, data=date).select_related(
-                'horror').values_list("slot_id", flat=True).aiterator():
+        async for slot_id in Booking.objects.filter(
+                horror__id_extrareality=id_extrareality, data=date
+        ).values_list("slot_id", flat=True).aiterator():
             booked_slots.append(slot_id)
 
-        # Формируем слоты для текущей даты
-        async for slot in slots.aiterator():
-            slot_time = slot.time.strftime("%H:%M")
+        slots_for_date = []
+        for slot_time in times:
+            # Получаем все варианты для данного времени
+            price_and_count = TimeSlot.objects.filter(
+                times_in_tfh__horror__id_extrareality=id_extrareality,
+                day=weekday,
+                time=slot_time
+            ).order_by("count_of_peoples")
 
-            # Убираем слот "23:50" для всех дней, кроме пятницы и субботы
-            if slot_time == "23:50" and date.weekday() not in [4, 5]:
-                continue
+            info = {}
+            async for item in price_and_count.aiterator():
+                info[item.count_of_peoples] = item.price
 
-            # Создаем datetime объект для слота в МОСКОВСКОМ времени
-            slot_datetime_naive = datetime.combine(date, slot.time)
-            slot_datetime = moskow_tz.localize(slot_datetime_naive)
+            # Берём первый слот только для получения id (если нужно)
+            current_flag = False
+            first_slot = await price_and_count.afirst()
+            if date == today:
+                future_datetime = timezone.now() + timedelta(minutes=30)
+                slot_datetime = timezone.make_aware(
+                    datetime.combine(timezone.now().date(), slot_time)
+                )
+                current_flag = future_datetime > slot_datetime
+            if current_flag:
+                flag = False
 
-            # Проверяем, что слот еще не прошел
-            is_future_slot = slot_datetime > current_time
+            if not current_flag and first_slot.id in booked_slots:
+                flag = False
+
+            if not current_flag and first_slot.id not in booked_slots:
+                flag = True
 
             result.append({
                 "date": date.isoformat(),
                 "time": slot_time,
-                "is_free": slot.id not in booked_slots and is_future_slot,
-                "extraPrices": {
-                    "1": 110,
-                    "2": 120,
-                    "3": 130,
-                    "4": 140,
-                    "5": 150,
-                },
-                "our_time_id": horror.id_extrareality
+                "is_free": flag,
+                "extraPrices": info,
+                "our_time_id": weekday
             })
 
     return Response(result)
 
 
 @api_view(["POST"])
-async def take_data_extrareality(request):
+async def take_data_extrareality(request, id_extrareality):
     comment = request.data["comment"]
     data = request.data["datetime"]
     name = request.data["name"]
@@ -455,13 +533,13 @@ async def take_data_extrareality(request):
     source = request.data["source"]
     price = request.data["price"]
     uid = request.data["uid"]
-    id_extrareality = request.data["our_time_id"]
+    day = request.data["our_time_id"]
 
     horror = await Horror.objects.filter(id_extrareality=id_extrareality).afirst()
     date_str = data.split(" ")[0]
     date = datetime.strptime(date_str, '%Y-%m-%d')
     time = data.split(" ")[1]
-    slot = await TimeSlot.objects.filter(time=time).afirst()
+    slot = await TimeSlot.objects.filter(time=time, day=day).afirst()
 
     if not slot:
         return Response({"success": False, "message": "Указанное время для брони не существует"}, status=404)
@@ -475,14 +553,15 @@ async def take_data_extrareality(request):
         return Response({"success": False, "message": "Указанное время занято"}, status=404)
 
     await Booking.objects.acreate(horror=horror, data=date, slot=slot, first_name=name, phone=phone, comment=comment,
-                                  price=price, order_id_extrareality=uid)
+                                  price=price, order_id_extrareality=uid, count_of_peoples=players_num)
 
     datetime_obj = datetime.strptime(data, "%Y-%m-%d %H:%M:%S")
     formatted_booking_start = datetime_obj.strftime("%d.%m.%Y %H:%M:%S")
 
     contact_id = await get_or_create_contact(name=name, phone=phone)
     deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id, company_title=source,
-                                comments=comment, booking_start=formatted_booking_start, count_of_peoples=players_num)
+                                comments=comment, booking_start=formatted_booking_start, count_of_peoples=players_num,
+                                old_person=False)
     result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
     book = await Booking.objects.filter(horror=horror, data=date, slot=slot).afirst()
     book.bitrix_booking_id = booking_id
@@ -490,13 +569,15 @@ async def take_data_extrareality(request):
     await book.asave()
     peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
     msg = (
-        f"Хорошая новость!\n\n"
-        f"Вы получили бронь от - {name} \n\n"
-        f"Телефон для связи: {phone}\n\n"
-        f"Квиз: {horror.name}\n\n"
-        f"Дата и время: {date} {slot.time} "
-        f"Комментарий от заказчика: {comment}\n\n"
-        f"Цена: {price}\n\n"
+        f"Поступила бронь на квест '{horror.name}' (ID брони {book.id})\n\n"
+        f"Дата игры: {date} {slot.time}\n\n"
+        f"Имя: {name}\n\n"
+        f"Телефон: {phone}\n\n"
+        f"Стоимость: {price}\n\n"
+        f"Комментарий: {comment}\n\n"
+        f"Выбранный режим: Игра для {players_num} человек\n\n"
+        f"Источник: Extrareality\n\n"
+
     )
     for id in peoples:
         try:

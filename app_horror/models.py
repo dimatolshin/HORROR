@@ -22,8 +22,9 @@ class Horror(models.Model):
     genre = models.CharField(max_length=50, verbose_name='Жанр квеста')
     rules = models.TextField(blank=True, null=True, verbose_name='Правила посещения')
     is_active = models.BooleanField(default=True, verbose_name='Активность квеста')
+    older_14 = models.BooleanField(default=False,verbose_name='Необходимо чтоб все игроки были страше 14')
     id_mir_kvestov = models.BigIntegerField(null=True, blank=True)
-    id_extrareality = models.CharField(null=True,blank=True)
+    id_extrareality = models.CharField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Квесты'
@@ -73,18 +74,39 @@ class BlurPhoto(models.Model):
 
 
 class TimeSlot(models.Model):
-    """Модель временных слотов для бронирования квестов"""
-    time = models.TimeField(unique=True)
+    DAY_CHOICES = [
+        (0, 'Понедельник'),
+        (1, 'Вторник'),
+        (2, 'Среда'),
+        (3, 'Четверг'),
+        (4, 'Пятница'),
+        (5, 'Суббота'),
+        (6, 'Воскресенье'),
+    ]
+    COLOR_CHOICES = [
+        ('#11B3D1', 'Голубой'),
+        ('#0A8284', 'Караловый'),
+        ('#A40000', 'Красный'),
+        ('#ffd700', 'Золотистый'),
 
-    # day=
-    # price=
+    ]
+
+    """Модель временных слотов для бронирования квестов"""
+    name = models.CharField(verbose_name='Имя квеста',null=True,blank=True)
+    time = models.TimeField()
+    day = models.IntegerField(choices=DAY_CHOICES, verbose_name='День', default=0)
+    price = models.BigIntegerField(default=130, verbose_name='цена')
+    count_of_peoples = models.IntegerField(default=1, verbose_name='Количество людей')
+    color = models.CharField(choices=COLOR_CHOICES, verbose_name='Цвет ячейки', default='#ffd700')
 
     class Meta:
         verbose_name = 'Время'
         verbose_name_plural = 'Время'
 
     def __str__(self):
-        return self.time.strftime("%H:%M")
+        return (
+            f'Имя:{self.name}, Время: {self.time.strftime("%H:%M")}, Количество:{self.count_of_peoples}, День:{self.get_day_display()},'
+            f' Стоимость: {self.price}')
 
 
 class TimeForHorror(models.Model):
@@ -117,12 +139,12 @@ class Booking(models.Model):
     phone = models.CharField(max_length=20, verbose_name='Телефон клиента')
     certificate = models.BooleanField(default=False, verbose_name='Наличие сертификата')
     comment = models.TextField(blank=True, null=True, verbose_name='Комментарий клиента')
+    count_of_peoples = models.IntegerField(blank=True, null=True, verbose_name='количество человек')
     price = models.IntegerField(blank=True, null=True, verbose_name='Цена за квест')
     bitrix_booking_id = models.IntegerField(null=True, blank=True)
-    result_id= models.CharField(null=True,blank=True,verbose_name='ID Результат в календаре')
+    result_id = models.CharField(null=True, blank=True, verbose_name='ID Результат в календаре')
     order_id_mir_kvestov = models.CharField(null=True, blank=True)
-    order_id_extrareality = models.CharField(null=True,blank=True)
-
+    order_id_extrareality = models.CharField(null=True, blank=True)
 
     class Meta:
         """Один слот в день — только один раз"""
