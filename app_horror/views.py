@@ -111,7 +111,6 @@ class AvailableSlotsView(APIView):
                     flag = False
 
                 slots_for_date.append({
-                    "id": first_slot.id if first_slot else None,
                     "time": slot_time.strftime("%H:%M"),
                     "info": info,
                     "color": first_slot.color,
