@@ -87,6 +87,7 @@ class AvailableSlotsView(APIView):
                 info = []
                 async for item in price_and_count.aiterator():
                     info.append({
+                        "id":item.id,
                         "count_of_peoples": item.count_of_peoples,
                         "price": item.price
                     })
