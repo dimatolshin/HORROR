@@ -137,7 +137,7 @@ class AvailableSlotsView(APIView):
         return f"{date.day} {date.strftime('%B').capitalize()} {weekdays[date.weekday()]}"
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 async def booking_endpoint(request):
     horror_id = request.data.get("horror")
     data = request.data.get("data")
