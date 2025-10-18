@@ -182,24 +182,22 @@ async def booking_endpoint(request):
             await send_message(msg=msg, chat_id=id)
         except Exception:
             continue
-    print('data:', data.get('data', ''))
-    booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
+    booking_start = datetime.strptime(f"{data} {time.time}", "%Y-%m-%d %H:%M:%S")
     print("booking_start", booking_start)
     formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
     print("formatted_booking_start:", formatted_booking_start)
-    name = f"{data.get('first_name', '')} {data.get('last_name', '')}"
-    phone = f"{data.get('phone', '')}"
-    price = f"{data.get('price', '')}"
-    comment = data.get('comment', '')
+    name = f"{first_name} {last_name}"
+    phone = f"{phone}"
+    price = f"{price}"
     company_title = 'My horror site'
     contact_id = await get_or_create_contact(name=name, phone=phone)
     print("contact_id:", contact_id)
     deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id,
                                 company_title=company_title,
                                 comments=comment, booking_start=formatted_booking_start,
-                                count_of_peoples=data.get('count_of_peoples'), old_person=older_14)
+                                count_of_peoples=count_of_peoples, old_person=older_14)
     result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-    book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
+    book = await Booking.objects.filter(horror=horror, data=data, slot=time).afirst()
     book.bitrix_booking_id = booking_id
     book.result_id = result_id
     await book.asave()
