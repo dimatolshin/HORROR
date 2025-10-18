@@ -197,10 +197,9 @@ async def booking_endpoint(request):
                                 comments=comment, booking_start=formatted_booking_start,
                                 count_of_peoples=count_of_peoples, old_person=older_14)
     result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-    book = await Booking.objects.filter(horror=horror, data=data, slot=time).afirst()
-    book.bitrix_booking_id = booking_id
-    book.result_id = result_id
-    await book.asave()
+    booking.bitrix_booking_id = booking_id
+    booking.result_id = result_id
+    await booking.asave()
     return JsonResponse({'Info':'Success'},status=200)
 
 
