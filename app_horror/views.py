@@ -3,6 +3,8 @@ import time
 from datetime import datetime, timedelta
 from adrf.views import APIView
 from asgiref.sync import sync_to_async
+from django.http import JsonResponse
+from psycopg2.extensions import JSONB
 from rest_framework import status
 from rest_framework.response import Response
 from .models import *
@@ -87,7 +89,7 @@ class AvailableSlotsView(APIView):
                 info = []
                 async for item in price_and_count.aiterator():
                     info.append({
-                        "id":item.id,
+                        "id": item.id,
                         "count_of_peoples": item.count_of_peoples,
                         "price": item.price
                     })
@@ -135,71 +137,136 @@ class AvailableSlotsView(APIView):
         return f"{date.day} {date.strftime('%B').capitalize()} {weekdays[date.weekday()]}"
 
 
-class BookingCreateView(APIView):
-    """Представление для создания брони"""
-    permission_classes = [AllowAny]
+@api_view(["GET"])
+async def booking_endpoint(request):
+    horror_id = request.data.get("horror")
+    data = request.data.get("data")
+    phone = request.data.get("phone")
+    slot = request.data.get("slot")
+    first_name = request.data.get("first_name")
+    last_name = request.data.get("last_name")
+    certificate = request.data.get("false")
+    comment = request.data.get("comment")
+    price = request.data.get("price")
+    count_of_peoples = request.data.get("count_of_peoples")
+    older_14 = request.data.get("older_14")
 
-    async def post(self, request, *args, **kwargs):
-        peoples = [521662459, 5235284862, 605787781, 602753713]
-        data = request.data.copy()
-        old_person = data.pop("old_person", False)
-        serializer = BookingSerializer(data=data)
+    peoples = [521662459, 5235284862, 605787781, 602753713]
 
+    horror = await Horror.objects.filter(id=horror_id).afirst()
+
+    time = await TimeSlot.objects.filter(id=slot).afirst()
+
+    await Booking.objects.acreate(horror=horror, data=data, slot=time, first_name=first_name, last_name=last_name,
+                                  phone=phone, certificate=certificate, comment=comment, price=price,
+                                  count_of_peoples=count_of_peoples)
+
+    booking= await Booking.objects.filter(horror=horror, slot=time).afirst()
+    msg = (
+        f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
+        f"Дата игры: {data.get('data', '')} {time.time}\n\n"
+        f"Имя: {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
+        f"Телефон: {data.get('phone')}\n\n"
+        f"Стоимость: {data.get('price', '')}\n\n"
+        f"Выбранный режим:  Игра для {data.get('count_of_peoples')} человек \n\n"
+        f"Комментарий: {data.get('comment', '')}\n\n"
+        f"Источник: quest-house.by\n\n"
+
+    )
+    for id in peoples:
         try:
-            is_valid = await sync_to_async(serializer.is_valid)()
+            await send_message(msg=msg, chat_id=id)
+        except Exception:
+            continue
+    print('data:', data.get('data', ''))
+    booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
+    print("booking_start", booking_start)
+    formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
+    print("formatted_booking_start:", formatted_booking_start)
+    name = f"{data.get('first_name', '')} {data.get('last_name', '')}"
+    phone = f"{data.get('phone', '')}"
+    price = f"{data.get('price', '')}"
+    comment = data.get('comment', '')
+    company_title = 'My horror site'
+    contact_id = await get_or_create_contact(name=name, phone=phone)
+    print("contact_id:", contact_id)
+    deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id,
+                                company_title=company_title,
+                                comments=comment, booking_start=formatted_booking_start,
+                                count_of_peoples=data.get('count_of_peoples'), old_person=older_14)
+    result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+    book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
+    book.bitrix_booking_id = booking_id
+    book.result_id = result_id
+    await book.asave()
+    return JsonResponse({'Info':'Success'},status=200)
 
-            if is_valid:
-                booking = await sync_to_async(serializer.save)()
 
-                horror = await Horror.objects.filter(id=data.get('horror')).afirst()
-
-                time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
-
-                msg = (
-                    f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
-                    f"Дата игры: {data.get('data', '')} {time.time}\n\n"
-                    f"Имя: {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
-                    f"Телефон: {data.get('phone')}\n\n"
-                    f"Стоимость: {data.get('price', '')}\n\n"
-                    f"Выбранный режим:  Игра для {data.get('count_of_peoples')} человек \n\n"
-                    f"Комментарий: {data.get('comment', '')}\n\n"
-                    f"Источник: quest-house.by\n\n"
-
-                )
-                for id in peoples:
-                    try:
-                        await send_message(msg=msg, chat_id=id)
-                    except Exception:
-                        continue
-                print('data:', data.get('data', ''))
-                booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
-                print("booking_start", booking_start)
-                formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
-                print("formatted_booking_start:", formatted_booking_start)
-                name = f"{data.get('first_name', '')} {data.get('last_name', '')}"
-                phone = f"{data.get('phone', '')}"
-                price = f"{data.get('price', '')}"
-                comment = data.get('comment', '')
-                company_title = 'My horror site'
-                contact_id = await get_or_create_contact(name=name, phone=phone)
-                print("contact_id:", contact_id)
-                deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id,
-                                            company_title=company_title,
-                                            comments=comment, booking_start=formatted_booking_start,
-                                            count_of_peoples=data.get('count_of_peoples'), old_person=old_person)
-                result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-                book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
-                book.bitrix_booking_id = booking_id
-                book.result_id = result_id
-                await book.asave()
-                return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
-
-            print("Serializer errors:", serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            print("Error:", str(e))
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# class BookingCreateView(APIView):
+#     """Представление для создания брони"""
+#     permission_classes = [AllowAny]
+#
+#     async def post(self, request, *args, **kwargs):
+#         peoples = [521662459, 5235284862, 605787781, 602753713]
+#         data = request.data.copy()
+#         old_person = data.pop("old_person", False)
+#         serializer = BookingSerializer(data=data)
+#
+#         try:
+#             is_valid = await sync_to_async(serializer.is_valid)()
+#
+#             if is_valid:
+#                 booking = await sync_to_async(serializer.save)()
+#
+#                 horror = await Horror.objects.filter(id=data.get('horror')).afirst()
+#
+#                 time = await TimeSlot.objects.filter(id=data.get('slot')).afirst()
+#
+#                 msg = (
+#                     f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
+#                     f"Дата игры: {data.get('data', '')} {time.time}\n\n"
+#                     f"Имя: {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
+#                     f"Телефон: {data.get('phone')}\n\n"
+#                     f"Стоимость: {data.get('price', '')}\n\n"
+#                     f"Выбранный режим:  Игра для {data.get('count_of_peoples')} человек \n\n"
+#                     f"Комментарий: {data.get('comment', '')}\n\n"
+#                     f"Источник: quest-house.by\n\n"
+#
+#                 )
+#                 for id in peoples:
+#                     try:
+#                         await send_message(msg=msg, chat_id=id)
+#                     except Exception:
+#                         continue
+#                 print('data:', data.get('data', ''))
+#                 booking_start = datetime.strptime(f"{data.get('data', '')} {time.time}", "%Y-%m-%d %H:%M:%S")
+#                 print("booking_start", booking_start)
+#                 formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
+#                 print("formatted_booking_start:", formatted_booking_start)
+#                 name = f"{data.get('first_name', '')} {data.get('last_name', '')}"
+#                 phone = f"{data.get('phone', '')}"
+#                 price = f"{data.get('price', '')}"
+#                 comment = data.get('comment', '')
+#                 company_title = 'My horror site'
+#                 contact_id = await get_or_create_contact(name=name, phone=phone)
+#                 print("contact_id:", contact_id)
+#                 deal_id = await create_deal(horror_name=horror.name, amount=price, contact_id=contact_id,
+#                                             company_title=company_title,
+#                                             comments=comment, booking_start=formatted_booking_start,
+#                                             count_of_peoples=data.get('count_of_peoples'), old_person=old_person)
+#                 result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+#                 book = await Booking.objects.filter(horror=horror, data=data.get('data'), slot=time).afirst()
+#                 book.bitrix_booking_id = booking_id
+#                 book.result_id = result_id
+#                 await book.asave()
+#                 return Response(BookingSerializer(booking).data, status=status.HTTP_201_CREATED)
+#
+#             print("Serializer errors:", serializer.errors)
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#         except Exception as e:
+#             print("Error:", str(e))
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SlotsListView(APIView):
@@ -576,6 +643,46 @@ async def take_data_extrareality(request, id_extrareality):
         f"Стоимость: {price}\n\n"
         f"Комментарий: {comment}\n\n"
         f"Выбранный режим: Игра для {players_num} человек\n\n"
+        f"Источник: Extrareality\n\n"
+
+    )
+    for id in peoples:
+        try:
+            await send_message(msg=msg, chat_id=id)
+        except Exception:
+            continue
+    return Response({"success": True}, status=200)
+
+
+@api_view(["POST"])
+async def take_later_data_quest(request):
+    horror_id = request.data.get("horror")
+    data = request.data.get("data")
+    phone = request.data.get("phone")
+    time = request.data.get("time")
+    first_name = request.data.get("first_name")
+    last_name = request.data.get("last_name")
+    certificate = request.data.get("false")
+    comment = request.data.get("comment")
+    price = request.data.get("price")
+    count_of_peoples = request.data.get("count_of_peoples")
+    older_14 = request.data.get("older_14")
+
+    peoples = [521662459, 883664955, 5235284862, 605787781, 602753713]
+    horror = await Horror.objects.filter(id=horror_id).afirst()
+    if certificate:
+        certificate = 'Имеется'
+    if not certificate:
+        certificate = 'Не Имеется'
+    msg = (
+        f"Поступила бронь на квест '{horror.name}' на более позднюю дату)\n\n"
+        f"Дата игры: {data} {time}\n\n"
+        f"Имя: {first_name} {last_name}\n\n"
+        f"Телефон: {phone}\n\n"
+        f"Стоимость: {price}\n\n"
+        f"Комментарий: {comment}\n\n"
+        f"Сертификат: {certificate}\n\n"
+        f"Выбранный режим: Игра для {count_of_peoples} человек\n\n"
         f"Источник: Extrareality\n\n"
 
     )
