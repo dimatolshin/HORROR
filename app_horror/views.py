@@ -170,18 +170,18 @@ async def booking_endpoint(request):
     if existing_booking:
         return JsonResponse({'error': 'Бронь уже существует'}, status=400)
 
-    booking = await Booking.objects.acreate(
-        horror=horror,
-        data=date,
-        slot=time,
-        first_name=first_name,
-        last_name=last_name,
-        phone=phone,
-        certificate=certificate,
-        comment=comment,
-        price=price,
-        count_of_peoples=count_of_peoples
-    )
+    # booking = await Booking.objects.acreate(
+    #     horror=horror,
+    #     data=date,
+    #     slot=time,
+    #     first_name=first_name,
+    #     last_name=last_name,
+    #     phone=phone,
+    #     certificate=certificate,
+    #     comment=comment,
+    #     price=price,
+    #     count_of_peoples=count_of_peoples
+    # )
 
 
     msg = (
@@ -202,30 +202,30 @@ async def booking_endpoint(request):
         except Exception:
             continue
 
-    booking_start = datetime.strptime(f"{date} {time.time}", "%Y-%m-%d %H:%M:%S")
-    formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
-    name = f"{first_name} {last_name}"
-    company_title = 'My horror site'
-
-    contact_id = await get_or_create_contact(name=name, phone=phone)
-    deal_id = await create_deal(
-        horror_name=horror.name,
-        amount=price,
-        contact_id=contact_id,
-        company_title=company_title,
-        comments=comment,
-        booking_start=formatted_booking_start,
-        count_of_peoples=count_of_peoples,
-        old_person=older_14
-    )
-
-    result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-    booking.bitrix_booking_id = booking_id
-    booking.result_id = result_id
-    await booking.asave()
-
-    duble= await Booking.objects.filter(horror=horror).alast()
-    await duble.adelete()
+    # booking_start = datetime.strptime(f"{date} {time.time}", "%Y-%m-%d %H:%M:%S")
+    # formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
+    # name = f"{first_name} {last_name}"
+    # company_title = 'My horror site'
+    #
+    # contact_id = await get_or_create_contact(name=name, phone=phone)
+    # deal_id = await create_deal(
+    #     horror_name=horror.name,
+    #     amount=price,
+    #     contact_id=contact_id,
+    #     company_title=company_title,
+    #     comments=comment,
+    #     booking_start=formatted_booking_start,
+    #     count_of_peoples=count_of_peoples,
+    #     old_person=older_14
+    # )
+    #
+    # result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+    # booking.bitrix_booking_id = booking_id
+    # booking.result_id = result_id
+    # await booking.asave()
+    #
+    # duble= await Booking.objects.filter(horror=horror).alast()
+    # await duble.adelete()
 
     return JsonResponse({'Info': 'Success'}, status=200)
 
