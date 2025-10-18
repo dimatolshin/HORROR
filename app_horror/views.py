@@ -168,12 +168,12 @@ async def booking_endpoint(request):
     booking= await Booking.objects.filter(horror=horror, slot=time).afirst()
     msg = (
         f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
-        f"Дата игры: {data.get('data', '')} {time.time}\n\n"
-        f"Имя: {data.get('first_name', '')} {data.get('last_name', '')}\n\n"
-        f"Телефон: {data.get('phone')}\n\n"
-        f"Стоимость: {data.get('price', '')}\n\n"
-        f"Выбранный режим:  Игра для {data.get('count_of_peoples')} человек \n\n"
-        f"Комментарий: {data.get('comment', '')}\n\n"
+        f"Дата игры: {data} {time.time}\n\n"
+        f"Имя: {first_name} {last_name}\n\n"
+        f"Телефон: {phone}\n\n"
+        f"Стоимость: {price}\n\n"
+        f"Выбранный режим:  Игра для {count_of_peoples} человек \n\n"
+        f"Комментарий: {comment}\n\n"
         f"Источник: quest-house.by\n\n"
 
     )
