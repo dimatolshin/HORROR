@@ -155,42 +155,18 @@ async def booking_endpoint(request):
     count_of_peoples = request.data.get("count_of_peoples")
     older_14 = request.data.get("older_14")
 
-    # Сначала проверяем, нет ли уже такой брони
+    # Получаем данные квеста и времени
     horror = await Horror.objects.filter(id=horror_id).afirst()
     time = await TimeSlot.objects.filter(id=slot).afirst()
 
-    # Проверяем существующую бронь
-    existing_booking = await Booking.objects.filter(
-        horror=horror,
-        data=date,
-        slot=time,
-        phone=phone
-    ).afirst()
-
-    if existing_booking:
-        return JsonResponse({'error': 'Бронь уже существует'}, status=400)
-
-    # booking = await Booking.objects.acreate(
-    #     horror=horror,
-    #     data=date,
-    #     slot=time,
-    #     first_name=first_name,
-    #     last_name=last_name,
-    #     phone=phone,
-    #     certificate=certificate,
-    #     comment=comment,
-    #     price=price,
-    #     count_of_peoples=count_of_peoples
-    # )
-
-
+    # Отправляем сообщение в Telegram
     msg = (
-        f"Поступила бронь на квест '{horror.name}' (ID брони )\n\n"
+        f"Поступила бронь на квест '{horror.name}'\n\n"
         f"Дата игры: {date} {time.time}\n\n"
         f"Имя: {first_name} {last_name}\n\n"
         f"Телефон: {phone}\n\n"
         f"Стоимость: {price}\n\n"
-        f"Выбранный режим:  Игра для {count_of_peoples} человек \n\n"
+        f"Выбранный режим: Игра для {count_of_peoples} человек\n\n"
         f"Комментарий: {comment}\n\n"
         f"Источник: quest-house.by\n\n"
     )
@@ -199,35 +175,104 @@ async def booking_endpoint(request):
     for id in peoples:
         try:
             await send_message(msg=msg, chat_id=id)
-        except Exception:
+        except Exception as e:
+            print(f"Ошибка отправки сообщения для {id}: {e}")
             continue
 
-    # booking_start = datetime.strptime(f"{date} {time.time}", "%Y-%m-%d %H:%M:%S")
-    # formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
-    # name = f"{first_name} {last_name}"
-    # company_title = 'My horror site'
-    #
-    # contact_id = await get_or_create_contact(name=name, phone=phone)
-    # deal_id = await create_deal(
-    #     horror_name=horror.name,
-    #     amount=price,
-    #     contact_id=contact_id,
-    #     company_title=company_title,
-    #     comments=comment,
-    #     booking_start=formatted_booking_start,
-    #     count_of_peoples=count_of_peoples,
-    #     old_person=older_14
-    # )
-    #
-    # result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
-    # booking.bitrix_booking_id = booking_id
-    # booking.result_id = result_id
-    # await booking.asave()
-    #
-    # duble= await Booking.objects.filter(horror=horror).alast()
-    # await duble.adelete()
-
     return JsonResponse({'Info': 'Success'}, status=200)
+
+
+# @api_view(["POST"])
+# async def booking_endpoint(request):
+#     horror_id = request.data.get("horror")
+#     date = request.data.get("data")
+#     phone = request.data.get("phone")
+#     slot = request.data.get("slot")
+#     first_name = request.data.get("first_name")
+#     last_name = request.data.get("last_name")
+#     certificate = request.data.get("certificate")
+#     if not certificate:
+#         certificate = False
+#     comment = request.data.get("comment")
+#     if not comment:
+#         comment = ''
+#     price = request.data.get("price")
+#     count_of_peoples = request.data.get("count_of_peoples")
+#     older_14 = request.data.get("older_14")
+#
+#     # Сначала проверяем, нет ли уже такой брони
+#     horror = await Horror.objects.filter(id=horror_id).afirst()
+#     time = await TimeSlot.objects.filter(id=slot).afirst()
+#
+#     # Проверяем существующую бронь
+#     # existing_booking = await Booking.objects.filter(
+#     #     horror=horror,
+#     #     data=date,
+#     #     slot=time,
+#     #     phone=phone
+#     # ).afirst()
+#     #
+#     # if existing_booking:
+#     #     return JsonResponse({'error': 'Бронь уже существует'}, status=400)
+#
+#     # booking = await Booking.objects.acreate(
+#     #     horror=horror,
+#     #     data=date,
+#     #     slot=time,
+#     #     first_name=first_name,
+#     #     last_name=last_name,
+#     #     phone=phone,
+#     #     certificate=certificate,
+#     #     comment=comment,
+#     #     price=price,
+#     #     count_of_peoples=count_of_peoples
+#     # )
+#
+#
+#     msg = (
+#         f"Поступила бронь на квест '{horror.name}' (ID брони )\n\n"
+#         f"Дата игры: {date} {time.time}\n\n"
+#         f"Имя: {first_name} {last_name}\n\n"
+#         f"Телефон: {phone}\n\n"
+#         f"Стоимость: {price}\n\n"
+#         f"Выбранный режим:  Игра для {count_of_peoples} человек \n\n"
+#         f"Комментарий: {comment}\n\n"
+#         f"Источник: quest-house.by\n\n"
+#     )
+#
+#     peoples = [521662459, 5235284862, 605787781, 602753713]
+#     for id in peoples:
+#         try:
+#             await send_message(msg=msg, chat_id=id)
+#         except Exception:
+#             continue
+#
+#     # booking_start = datetime.strptime(f"{date} {time.time}", "%Y-%m-%d %H:%M:%S")
+#     # formatted_booking_start = booking_start.strftime("%d.%m.%Y %H:%M:%S")
+#     # name = f"{first_name} {last_name}"
+#     # company_title = 'My horror site'
+#     #
+#     # contact_id = await get_or_create_contact(name=name, phone=phone)
+#     # deal_id = await create_deal(
+#     #     horror_name=horror.name,
+#     #     amount=price,
+#     #     contact_id=contact_id,
+#     #     company_title=company_title,
+#     #     comments=comment,
+#     #     booking_start=formatted_booking_start,
+#     #     count_of_peoples=count_of_peoples,
+#     #     old_person=older_14
+#     # )
+#     #
+#     # result_id, booking_id = await get_booking_id_by_deal(deal_id=deal_id, horror_name=horror.name)
+#     # booking.bitrix_booking_id = booking_id
+#     # booking.result_id = result_id
+#     # await booking.asave()
+#     #
+#     # duble= await Booking.objects.filter(horror=horror).alast()
+#     # await duble.adelete()
+#
+#     return JsonResponse({'Info': 'Success'}, status=200)
 
 
 
