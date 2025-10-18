@@ -145,8 +145,12 @@ async def booking_endpoint(request):
     slot = request.data.get("slot")
     first_name = request.data.get("first_name")
     last_name = request.data.get("last_name")
-    certificate = request.data.get("false")
+    certificate = request.data.get("certificate")
+    if not certificate:
+        certificate = False
     comment = request.data.get("comment")
+    if not comment:
+        comment = ''
     price = request.data.get("price")
     count_of_peoples = request.data.get("count_of_peoples")
     older_14 = request.data.get("older_14")
@@ -662,8 +666,12 @@ async def take_later_data_quest(request):
     time = request.data.get("time")
     first_name = request.data.get("first_name")
     last_name = request.data.get("last_name")
-    certificate = request.data.get("false")
+    certificate = request.data.get("certificate")
+    if not certificate:
+        certificate = False
     comment = request.data.get("comment")
+    if not comment:
+        comment = ''
     price = request.data.get("price")
     count_of_peoples = request.data.get("count_of_peoples")
     older_14 = request.data.get("older_14")
