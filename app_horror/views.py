@@ -224,7 +224,7 @@ async def booking_endpoint(request):
     booking.result_id = result_id
     await booking.asave()
 
-    duble= await Booking.objects.filter(horror=horror).afirst()
+    duble= await Booking.objects.filter(horror=horror).alast()
     await duble.adelete()
 
     return JsonResponse({'Info': 'Success'}, status=200)
