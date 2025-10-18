@@ -185,7 +185,7 @@ async def booking_endpoint(request):
 
 
     msg = (
-        f"Поступила бронь на квест '{horror.name}' (ID брони {booking.id})\n\n"
+        f"Поступила бронь на квест '{horror.name}' (ID брони )\n\n"
         f"Дата игры: {date} {time.time}\n\n"
         f"Имя: {first_name} {last_name}\n\n"
         f"Телефон: {phone}\n\n"
