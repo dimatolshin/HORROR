@@ -159,6 +159,30 @@ async def booking_endpoint(request):
     horror = await Horror.objects.filter(id=horror_id).afirst()
     time = await TimeSlot.objects.filter(id=slot).afirst()
 
+    existing_booking = await Booking.objects.filter(
+                horror=horror,
+                data=date,
+                slot=time,
+                phone=phone
+            ).afirst()
+
+    if existing_booking:
+        return JsonResponse({'error': 'Бронь уже существует'}, status=400)
+
+    booking = await Booking.objects.acreate(
+        horror=horror,
+        data=date,
+        slot=time,
+        first_name=first_name,
+        last_name=last_name,
+        phone=phone,
+        certificate=certificate,
+        comment=comment,
+        price=price,
+        count_of_peoples=count_of_peoples
+    )
+
+
     # Отправляем сообщение в Telegram
     msg = (
         f"Поступила бронь на квест '{horror.name}'\n\n"
