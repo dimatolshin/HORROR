@@ -58,28 +58,26 @@ class AvailableSlotsView(APIView):
         for date in dates:
             weekday = date.weekday()
             # Получаем уникальные времена для данного дня
-            times = (
-                await sync_to_async(list)(
-                    TimeSlot.objects.filter(
-                        times_in_tfh__horror__id=horror_id,
-                        day=weekday,
-                    )
-                    .values_list("time", flat=True)
-                    .distinct()
-                    .order_by("time")
+            times = await sync_to_async(list)(
+                TimeSlot.objects.filter(
+                    times_in_tfh__horror__id=horror_id,
+                    day=weekday,
                 )
+                .values_list("time", flat=True)
+                .distinct()
+                .order_by("time")
             )
 
             # Список забронированных слотов
             booked_slots = []
             async for slot_id in Booking.objects.filter(
-                    horror_id=horror_id, data=date
+                horror_id=horror_id, data=date
             ).values_list("slot_id", flat=True).aiterator():
                 booked_slots.append(slot_id)
 
             slots_for_date = []
             for slot_time in times:
-                # Получаем все варианты для данного времени
+                # Получаем все варианты слотов для данного времени
                 price_and_count = TimeSlot.objects.filter(
                     times_in_tfh__horror__id=horror_id,
                     day=weekday,
@@ -87,30 +85,32 @@ class AvailableSlotsView(APIView):
                 ).order_by("count_of_peoples")
 
                 info = []
+                slot_ids_for_time = []
                 async for item in price_and_count.aiterator():
                     info.append({
                         "id": item.id,
                         "count_of_peoples": item.count_of_peoples,
                         "price": item.price
                     })
+                    slot_ids_for_time.append(item.id)
 
-                # Берём первый слот только для получения id (если нужно)
-                current_flag = False
+                # Берём первый слот (для цвета)
                 first_slot = await price_and_count.afirst()
+
+                # Проверяем, есть ли бронь хотя бы на один слот в этом времени
+                is_booked_time = any(slot_id in booked_slots for slot_id in slot_ids_for_time)
+
+                # Проверяем, если это сегодняшний день и время уже прошло
+                current_flag = False
                 if date == today:
                     future_datetime = timezone.now() + timedelta(minutes=30)
                     slot_datetime = timezone.make_aware(
                         datetime.combine(timezone.now().date(), slot_time)
                     )
                     current_flag = future_datetime > slot_datetime
-                if current_flag:
-                    flag = True
 
-                if not current_flag and first_slot.id in booked_slots:
-                    flag = True
-
-                if not current_flag and first_slot.id not in booked_slots:
-                    flag = False
+                # Если слот забронирован или время прошло — считаем его недоступным
+                flag = current_flag or is_booked_time
 
                 slots_for_date.append({
                     "time": slot_time.strftime("%H:%M"),
