@@ -13,7 +13,7 @@ export default async function PopularSection({ horror }: PopularProps) {
         <div className="popular__block">
           <TitleBlockUI
             title="Популярные квесты"
-            href="horrors/1"
+            href="/#popular"
             label="Смотреть все"
             isPopular
           />

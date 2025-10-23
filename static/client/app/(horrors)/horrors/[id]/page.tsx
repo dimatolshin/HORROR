@@ -69,7 +69,7 @@ export default async function HorrorsPage({
         <div className="block md:hidden">
           <ReviewsSection reviews={reviews} />
         </div>
-        <Contacts location={currentHorror.location} />
+        <Contacts />
       </main>
     </>
   );

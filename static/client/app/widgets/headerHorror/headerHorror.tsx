@@ -76,11 +76,11 @@ export const HeaderHorror = () => {
       >
         <div className="container">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-20">
+            <div className="flex items-center gap-16">
               <Link href={"/"}>
                 <Image width={60} height={60} src={logo} alt="лого QuestHouse"/>
               </Link>
-              <nav className="nav hidden md:block">
+              <nav className="nav hidden lg:block">
                 <ul className="flex items-center gap-0.5 text-white">
                   {NAV.map((element) => (
                       <li key={element.id}>
@@ -109,17 +109,17 @@ export const HeaderHorror = () => {
                 </ul>
               </nav>
             </div>
-            <div className="flex items-center gap-14 text-white">
-              <div className={"flex-col text-white hidden xl:flex"}>
+            <div className="flex items-center gap-4 xl:gap-10 text-white">
+              <div className={"flex-col text-white flex"}>
                 <span className="text-[12px]">Телефон:</span>
-                <a className={"text-[16px] xl:text-[20px]"} href="tel:+375 (44) 533-02-78">
+                <a className={"text-[20px]"} href="tel:+375 (44) 533-02-78">
                   +375 (44) 533-02-78
                 </a>
               </div>
-              <LinkUI className="hidden md:block" href="#reservation">
+              <LinkUI className="hidden lg:block" href="#reservation">
                 Записаться
               </LinkUI>
-              <Link href={"/burger"} className="block md:hidden">
+              <Link href={"/burger"} className="block lg:hidden">
                 <Image src={burger} alt="burger"/>
               </Link>
             </div>
