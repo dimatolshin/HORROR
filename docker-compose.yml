@@ -40,7 +40,7 @@ services:
       - ./media:/horror_core/media
     env_file:
       - .env
-    restart: unless-stopped
+    restart: always
 
   tg_bot:
     build: .
@@ -48,7 +48,7 @@ services:
     depends_on:
       - horror
       - db
-    restart: unless-stopped
+    restart: always
     networks:
       - horror_core
 

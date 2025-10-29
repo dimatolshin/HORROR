@@ -11,7 +11,7 @@ services:
       - VIRTUAL_HOST=quest-house.by
       - LETSENCRYPT_HOST=quest-house.by
       - LETSENCRYPT_EMAIL=1@1.com
-    restart: unless-stopped
+    restart: always
     networks:
       - horror_horror_core
 
