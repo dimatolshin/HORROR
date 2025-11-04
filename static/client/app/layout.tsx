@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import YandexMetrikaContainer from "@/app/lib/yandex";
 import { GoogleAnalytics } from "@/app/lib/google";
+import { QuestProvider } from '@/app/context/QuestContext';
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -127,8 +128,10 @@ export default function RootLayout({
   return (
     <html className="scroll-smooth" lang="ru">
       <body className={`${nunito.variable} ${poppins.variable} antialiased`}>
-        {children}
-        {modal}
+        <QuestProvider>
+          {children}
+          {modal}
+        </QuestProvider>
         <YandexMetrikaContainer />
         <GoogleAnalytics id="G-8TQHNHJ2ZM" />
         <noscript>

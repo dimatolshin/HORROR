@@ -93,3 +93,8 @@ body {
     padding-top: 36px;
   }
 }
+
+.reviews__empty {
+  color: white;
+  text-align: center;
+}
