@@ -1,16 +1,16 @@
 "use client";
 
 import Dialog from "@/app/ui/dialogUI/dialogUI";
-import { useState } from "react";
+import {useEffect, useMemo, useState} from "react";
 import { IHorrorsPromise } from "@/app/api/horrors/fetchHorrors";
 import { FormField } from "@/app/ui/formField/formField";
 import { Checkbox } from "@/app/ui/checkbox/checkbox";
 import { MoreQuests } from "@/app/widgets/moreQuests/moreQuests";
-import { fetchReserv } from "@/app/api/reserv/fetchReserv";
+import {fetchReservLater} from "@/app/api/reserv/fetchReserv";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/app/api/queryClient";
 import { useForm } from "react-hook-form";
-import { ReservLaterScheme, ReservLaterType } from "@/app/types/reservLater";
+import { buildReservLaterScheme, ReservLaterType } from "@/app/types/reservLater";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { OnSuccess } from "../onSuccess/onSuccess";
@@ -21,63 +21,55 @@ interface IModal {
   questDetails: IHorrorsPromise;
 }
 
-const pricingPerPerson = {
-  1: 140,
-  2: 150,
-  3: 160,
-  4: 170,
-  5: 180,
-  6: 190,
-} as const;
-
 export const ReservationModalLater = ({
   dialogOpen,
   onClose,
   questDetails,
 }: IModal) => {
-  const [numberOfPeople, setNumberOfPeople] = useState(1);
   const [useCertificate, setUseCertificate] = useState<boolean>(false);
   const [useYear, setUseYear] = useState<boolean>(false);
   const [useAgreement, setUseAgreement] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const calculatePrice = () => {
-    return pricingPerPerson[numberOfPeople as keyof typeof pricingPerPerson];
-  };
+  const schema = useMemo(() => buildReservLaterScheme(questDetails.older_14), [questDetails.older_14]);
+
 
   const reservMutate = useMutation(
     {
       mutationFn: ({
         horror,
         data,
-        slot,
+        time,
         phone,
         first_name,
         last_name,
         certificate,
         comment,
-        price,
+        older_14,
+        count_of_peoples
       }: {
         horror: number;
         data: string;
-        slot: number;
+        time: string;
         phone: string;
         first_name: string;
         last_name: string;
         certificate?: boolean;
         comment?: string;
-        price: number;
+        older_14: boolean;
+        count_of_peoples: number;
       }) =>
-        fetchReserv({
+        fetchReservLater({
           horror,
           data,
-          slot,
+          time,
           phone,
           first_name,
           last_name,
           certificate,
           comment,
-          price,
+          older_14,
+          count_of_peoples
         }),
       mutationKey: ["reserv"],
       onSuccess() {
@@ -94,16 +86,40 @@ export const ReservationModalLater = ({
 
   const {
     register,
+    unregister,
     handleSubmit,
     reset,
+    resetField,
     formState: { errors },
-  } = useForm<ReservLaterType>({ resolver: zodResolver(ReservLaterScheme) });
+  } = useForm<ReservLaterType>({ resolver: zodResolver(schema) });
+
+
+  useEffect(() => {
+    if (!dialogOpen) {
+      // Сброс всех состояний при закрытии модального окна
+      setIsSuccess(false);
+      setUseCertificate(false);
+      setUseYear(false);
+      setUseAgreement(false);
+      reset(); // Сброс формы react-hook-form
+    }
+  }, [dialogOpen, reset]);
+
+  useEffect(() => {
+    if (questDetails.older_14) {
+      register("year");
+    } else {
+      unregister("year", { keepValue: false });
+      resetField("year", { defaultValue: false });
+      setUseYear(false);
+    }
+  }, [questDetails.older_14, register, unregister, resetField]);
 
   return (
-    <Dialog className="h-[90%!important]" isOpen={dialogOpen} onClose={onClose}>
+    <Dialog isOpen={dialogOpen} onClose={onClose}>
       <div className="flex flex-col sm:flex-row h-full text-white">
-        <div className="bg-[#82D7DB69] h-full min-h-[230px] overflow-hidden max-w-[567px] w-full flex flex-col pt-[53px] px-[24px] md:pt-[60px]">
-          <div className="flex flex-col items-center mb-auto">
+        <div className="bg-[#82D7DB69] min-h-[230px] overflow-hidden max-w-[567px] w-full flex flex-col pt-[53px] px-[24px] md:pt-[60px]">
+          <div className="flex flex-col items-center h-full">
             <span className="mb-[46px] text-[24px] sm:text-[28px] md:text-[36px] font-bold">
               Бронирование
             </span>
@@ -112,26 +128,27 @@ export const ReservationModalLater = ({
               {questDetails.name}
             </h2>
           </div>
-          <div className="hidden sm:block overflow-y-auto w-full max-w-[400px] mx-auto px-4">
-            <MoreQuests />
-          </div>
+          {/*<div className="hidden sm:block overflow-y-auto w-full max-w-[400px] mx-auto px-4">*/}
+          {/*  <MoreQuests />*/}
+          {/*</div>*/}
         </div>
         {!isSuccess ? (
           <form
             onSubmit={handleSubmit((data) => {
               reservMutate.mutate({
                 horror: questDetails.id,
-                data: "123",
+                data: data.date,
                 phone: data.phone,
-                slot: 1,
+                time: data.time,
+                count_of_peoples: data.people,
                 first_name: data.first_name,
                 last_name: data.last_name,
                 certificate: useCertificate,
                 comment: data.comment || "",
-                price: calculatePrice(),
+                older_14: useYear,
               });
             })}
-            className="flex flex-col w-full py-[50px] px-[30px] lg:py-[87px] lg:px-[117px]"
+            className="flex flex-col flex-1  w-full py-[50px] px-[30px] lg:py-[87px] lg:px-[117px]"
           >
             <div className="grid grid-cols-1 gap-y-[30px] lg:gap-x-[52px] lg:gap-y-[30px] lg:grid-cols-2">
               <FormField errors={errors.first_name?.message} label="Имя">
@@ -152,17 +169,18 @@ export const ReservationModalLater = ({
               </FormField>
               <FormField label="Дата">
                 <input
-                  {...register("first_name")}
+                  {...register("date")}
                   className="pb-[10px] transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                   type="date"
-                  placeholder="Фамилия"
+                  placeholder=""
                 />
               </FormField>
               <FormField label="Время">
                 <input
+                  {...register("time")}
                   className="pb-[10px] transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                   type="time"
-                  placeholder="Фамилия"
+                  placeholder=""
                 />
               </FormField>
               <FormField errors={errors.phone?.message} label="Ваш телефон">
@@ -173,32 +191,13 @@ export const ReservationModalLater = ({
                   placeholder="Ваш телефон"
                 />
               </FormField>
-              <FormField label="Количество участников">
-                <div className="relative h-[21px] mb-[15px]">
-                  <span className="label left-[0] absolute">1</span>
-                  <span className="label left-[20%] absolute">2</span>
-                  <span className="label left-[39%] absolute">3</span>
-                  <span className="label left-[58%] absolute">4</span>
-                  <span className="label left-[78%] absolute">5</span>
-                  <span className="label left-[97%] absolute">6</span>
-                </div>
+              <FormField errors={errors.people?.message} label="Количество участников">
                 <input
-                    {...register("people")}
-                  className="custom-range"
-                  type="range"
-                  placeholder="Ваш телефон"
-                  min={1}
-                  max={6}
-                  step={1}
-                  defaultValue={1}
-                  onChange={(e) => setNumberOfPeople(Number(e.target.value))}
+                    {...register("people", { valueAsNumber: true })}
+                    className="pb-[10px] transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
+                    type="number"
+                    placeholder="Количество участников"
                 />
-                {numberOfPeople === 6 && (
-                    <p className="text-[13px] text-[#A4A6A8] md:text-[16px] mt-4">
-                      (Бронирование действует при возрасте всех участников до 16 лет)
-                    </p>
-                )
-                }
               </FormField>
             </div>
             <Checkbox
@@ -207,21 +206,23 @@ export const ReservationModalLater = ({
               onChange={(e) => setUseCertificate(e.target.checked)}
               label="Использовать сертификат"
             />
-            <FormField className="mb-auto" label="Комментарий">
+            <FormField className="mt-6" label="Комментарий">
               <textarea
                 className="pb-[10px] resize-none transition ease-in-out outline-none border-b-1 border-solid border-[#8D8D8D] focus:border-[#fff]"
                 placeholder="Введите ваш комментарий"
               ></textarea>
             </FormField>
             <div className="mt-6">
-              <Checkbox
-                error={errors.year?.message}
-                {...register("year")}
-                checked={useYear}
-                onChange={(e) => setUseYear(e.target.checked)}
-                className="mb-2"
-                label="Все игроки старше 14 лет"
-              />
+              {questDetails.older_14 && (
+                  <Checkbox
+                      error={errors.year?.message}
+                      {...register("year")}
+                      checked={useYear}
+                      onChange={(e) => setUseYear(e.target.checked)}
+                      className="mb-2"
+                      label="Все игроки старше 14 лет"
+                  />
+              )}
               <Checkbox
                 error={errors.agreement?.message}
                 {...register("agreement")}

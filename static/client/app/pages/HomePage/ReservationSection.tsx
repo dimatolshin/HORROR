@@ -6,10 +6,11 @@ import { ReservationTable } from "@/app/widgets/reservationTable/reservationTabl
 import Image from "next/image";
 import clock from "@/app/assets/svg/clock_popular.svg";
 import { ReservationModalLater } from "@/app/components/reservationModalLater/reservationModalLater";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { CustomSwiper } from "@/app/ui/customSwiper/customSwiper";
 import { RatingUI } from "@/app/ui/ratingUI/ratingUI";
 import { api } from "@/app/api/api";
+import {useQuest} from "@/app/context/QuestContext";
 
 interface IReservationHorror {
   horror: IHorrorsPromise[];
@@ -41,10 +42,14 @@ const PRICE: IPrice[] = [
 
 export default function ReservationSection({ horror }: IReservationHorror) {
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
-  const [selectedQuest, setSelectedQuest] = useState<IHorrorsPromise | null>(
-    horror.find((q) => q.is_active)!
-  );
+  const { selectedQuest, setSelectedQuest } = useQuest();
   const activeHorrors = horror.filter((q) => q.is_active);
+
+  useEffect(() => {
+    if (!selectedQuest && activeHorrors.length > 0) {
+      setSelectedQuest(activeHorrors.find((q) => q.is_active) || activeHorrors[0]);
+    }
+  }, [activeHorrors, selectedQuest, setSelectedQuest]);
 
   return (
     <>

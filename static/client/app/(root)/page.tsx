@@ -14,20 +14,17 @@ const Contacts = dynamic(() => import("../widgets/contacts/contacts"));
 
 export default async function HomePage() {
   const horrorsPromise = getHorrors();
-  const reviewsPromise = fetchReviews();
-
-  const [horrors, reviews] = await Promise.all([
-    horrorsPromise,
-    reviewsPromise,
+  const [horrors] = await Promise.all([
+    horrorsPromise
   ]);
-
+    console.log(horrors)
   return (
     <main className="main">
       <HeroSection />
       <PopularSection horror={horrors} />
       <AboutSection />
       <ReservationSection horror={horrors} />
-      <ReviewsSection reviews={reviews} />
+      <ReviewsSection horror={horrors} />
       <Contacts />
     </main>
   );

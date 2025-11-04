@@ -9,27 +9,12 @@ export interface IReviewsPromise {
     nameQuest?: string;
 }
 
-interface QuestInfo {
-    id: string;
-    name: string;
-}
-
-export default async function fetchReviews(id?: string): Promise<IReviewsPromise[]> {
-    const ids: Record<string, QuestInfo> = {
-        "4": { id: "4027", name: "Зарождение зла. Аннабель" },
-        "5": { id: "3977", name: "И гаснет свет" },
-        "6": { id: "3553", name: "Астрал" },
-        "7": { id: "3544", name: "Заклятие" },
-        "8": { id: "4169", name: "Искатели Могил" },
-    };
-
-    const questId = id === undefined ? "3544" : (ids[id]?.id || "3544");
-
+export default async function fetchReviews(id?: number, name?: string): Promise<IReviewsPromise[]> {
     try {
-        const response = await axios.get(`https://extrareality.by/api2/reviews?quest_id=${questId}`);
+        const response = await axios.get(`https://extrareality.by/api2/reviews?quest_id=${id || 0}`);
         return response.data.map((review: IReviewsPromise) => ({
             ...review,
-            nameQuest: id ? ids[id]?.name : undefined
+            nameQuest: name
         }));
     } catch (err) {
         console.error("Ошибка получения данных", err);

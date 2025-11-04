@@ -24,6 +24,8 @@ export interface IHorrorsPromise {
   rating: number;
   registration_date: string;
   travel_time: number;
+  older_14: boolean;
+  id_extrareality: number;
 }
 
 export async function fetchHorrors(): Promise<IHorrorsPromise[]> {
@@ -39,9 +41,10 @@ export async function fetchHorrors(): Promise<IHorrorsPromise[]> {
 }
 
 export const getHorrors = async (): Promise<IHorrorsPromise[]> =>
-  await fetch(`${api}/api/horrors`, { next: { revalidate: 3600 } })
+  await fetch(`${api}/api/horrors`)
     .then((response) => {
-      return response.json();
+        const data = response.json();
+        return data;
     })
     .catch((err) => {
       console.error("Ошибка получения данных", err);
@@ -60,7 +63,7 @@ export async function fetchOneHorror(id: string): Promise<IHorrorsPromise> {
 }
 
 export const getOneHorror = async (id: string): Promise<IHorrorsPromise> =>
-  await fetch(`${api}/api/horrors/${id}`, { next: { revalidate: 3600 } })
+  await fetch(`${api}/api/horrors/${id}`, { next: { revalidate: 600 } })
     .then((response) => {
       return response.json();
     })

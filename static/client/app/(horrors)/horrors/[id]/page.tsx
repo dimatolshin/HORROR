@@ -5,7 +5,7 @@ import {
   getOneHorror,
 } from "@/app/api/horrors/fetchHorrors";
 import fetchReviews from "@/app/api/reviews/fetchReviews";
-import ReviewsSection from "@/app/pages/HomePage/ReviewsSection";
+import { ReviewList } from "@/app/components/reviewList/reviewList";
 import HeroHorrorSection from "@/app/pages/OrderPage/HeroHorrorSection";
 import RulesSection from "@/app/pages/OrderPage/RulesSection";
 import Awards from "@/app/widgets/awards/awards";
@@ -47,11 +47,13 @@ export default async function HorrorsPage({
 
   const horrorPromise = getOneHorror(id);
   const allHorrorsPromise = getHorrors();
-  const reviewsPromise = fetchReviews(id);
-
-  const [currentHorror, horrors, reviews] = await Promise.all([
+  const [currentHorror, horrors] = await Promise.all([
     horrorPromise,
     allHorrorsPromise,
+  ]);
+
+  const reviewsPromise = fetchReviews(currentHorror.id_extrareality, currentHorror.name);
+  const [reviews] = await Promise.all([
     reviewsPromise,
   ]);
 
@@ -66,8 +68,8 @@ export default async function HorrorsPage({
         <Awards id={currentHorror.id} />
         <RulesSection />
         <ReservationHorrorSection horror={currentHorror} />
-        <div className="block md:hidden">
-          <ReviewsSection reviews={reviews} />
+        <div className="block md:hidden mt-12">
+          <ReviewList review={reviews} />
         </div>
         <Contacts />
       </main>

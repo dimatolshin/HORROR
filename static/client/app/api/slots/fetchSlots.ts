@@ -5,11 +5,17 @@ export interface ISlotsFetch {
   date: string;
   date_front: string;
   slots: {
-    id: number;
     time: string;
-    price: number;
+    info: ISlotsInfo[];
+    color: string;
     is_booked: boolean;
   }[];
+}
+
+export type ISlotsInfo = {
+  id: number;
+  count_of_peoples: number;
+  price: number;
 }
 
 export const fetchSlots = async (id: string): Promise<ISlotsFetch[]> => {
