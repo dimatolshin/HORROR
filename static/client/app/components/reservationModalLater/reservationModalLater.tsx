@@ -5,7 +5,6 @@ import {useEffect, useMemo, useState} from "react";
 import { IHorrorsPromise } from "@/app/api/horrors/fetchHorrors";
 import { FormField } from "@/app/ui/formField/formField";
 import { Checkbox } from "@/app/ui/checkbox/checkbox";
-import { MoreQuests } from "@/app/widgets/moreQuests/moreQuests";
 import {fetchReservLater} from "@/app/api/reserv/fetchReserv";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/app/api/queryClient";

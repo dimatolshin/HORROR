@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useQuest } from "@/app/context/QuestContext"; // Импортируем хук
 import fetchReviews, { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
 import { ReviewList } from "@/app/components/reviewList/reviewList";
-import { TitleBlockUI } from "@/app/ui/titleBlockUI/titleBlockUI";
 
 export default function ReviewsSection() {
   const [reviews, setReviews] = useState<IReviewsPromise[]>([]);
