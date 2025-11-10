@@ -52,7 +52,7 @@ export default async function HorrorsPage({
     allHorrorsPromise,
   ]);
 
-  const reviewsPromise = fetchReviews(currentHorror.id_extrareality, currentHorror.name);
+  const reviewsPromise = fetchReviews(Number(currentHorror.id_extrareality), currentHorror.name);
   const [reviews] = await Promise.all([
     reviewsPromise,
   ]);

@@ -25,7 +25,7 @@ export interface IHorrorsPromise {
   registration_date: string;
   travel_time: number;
   older_14: boolean;
-  id_extrareality: number;
+  id_extrareality: string;
 }
 
 export async function fetchHorrors(): Promise<IHorrorsPromise[]> {

@@ -7,14 +7,14 @@ import { ReviewList } from "@/app/components/reviewList/reviewList";
 export default function ReviewsSection() {
   const [reviews, setReviews] = useState<IReviewsPromise[]>([]);
   const [loading, setLoading] = useState(true);
-  const { selectedQuest } = useQuest(); // Получаем из глобального состояния
+  const { selectedQuest } = useQuest();
 
   useEffect(() => {
     const loadReviews = async () => {
       setLoading(true);
       try {
         const data = await fetchReviews(
-            selectedQuest?.id_extrareality,
+            Number(selectedQuest?.id_extrareality),
             selectedQuest?.name
         );
         setReviews(data);

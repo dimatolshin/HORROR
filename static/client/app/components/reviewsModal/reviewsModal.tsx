@@ -2,8 +2,7 @@
 
 import Dialog from "@/app/ui/dialogUI/dialogUI";
 import { ReviewUI } from "@/app/ui/reviewUI/reviewUI";
-import { useEffect, useState } from "react";
-import fetchReviews, { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
+import { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
 
 interface IModal {
   dialogOpen: boolean;
@@ -12,20 +11,7 @@ interface IModal {
 }
 
 export const ReviewsModal = ({ dialogOpen, onClose, review }: IModal) => {
-  const [reviews, setReviews] = useState<IReviewsPromise[]>([]);
-
-  useEffect(() => {
-    const loadReviews = async () => {
-        const data = await fetchReviews();
-        setReviews(data);
-    };
-
-    if (!review) {
-      loadReviews();
-    }
-  }, [review]);
-
-  const reviewsToShow = review || reviews;
+  const reviewsToShow = review || [];
 
   return (
     <Dialog
