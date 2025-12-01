@@ -31,7 +31,7 @@ export default function ReviewsSection() {
     } else {
       setLoading(false);
     }
-  }, [selectedQuest?.id_extrareality]); // Перезагружаем при изменении квеста
+  }, [selectedQuest, selectedQuest?.id_extrareality]);
 
   return (
       <section id="reviews" className="reviews section--offset">
