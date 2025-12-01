@@ -67,7 +67,6 @@ export const ReservationModal = ({
     const minIndex = 0;
     const maxIndex = Math.max(0, people.length - 1);
 
-    const numberOfPeople = people.length > 0 ? people[peopleIndex] : 1;
     const selectedPrice = prices.length > 0 ? prices[peopleIndex] : 0;
     const selectedInfoId = ids.length > 0 ? ids[peopleIndex] : undefined;
 
@@ -273,7 +272,7 @@ export const ReservationModal = ({
                                     disabled={maxIndex === 0}
                                 />
 
-                                {numberOfPeople === 6 && (
+                                {(peopleIndex === maxIndex && people.length > 0) && (
                                     <p className="text-[13px] text-[#A4A6A8] md:text-[16px] mt-4">
                                         (Бронирование действует при возрасте всех участников до 16 лет)
                                     </p>
