@@ -65,8 +65,8 @@ export default async function HorrorsPage({
           reviews={reviews}
           horror={currentHorror}
         />
-        <Awards id={currentHorror.id} />
-        <RulesSection />
+        <Awards id={currentHorror.id} horrorName={currentHorror.name} />
+        <RulesSection horror={currentHorror} />
         <ReservationHorrorSection horror={currentHorror} />
         <div className="block md:hidden mt-12">
           <ReviewList review={reviews} />

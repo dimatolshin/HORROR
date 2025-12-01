@@ -48,6 +48,7 @@ export default async function HeroHorrorSection({
     rating,
     name,
     novelty,
+    rules
   } = horror;
 
   const blurImageUrl = getImageUrl(photos_blur);

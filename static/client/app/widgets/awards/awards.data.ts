@@ -12,6 +12,7 @@ import open_2021 from "@/app/assets/awards/open_2021.png";
 
 interface IAwardsCONSTANT {
   id: string;
+  name?: string;
   awards: {
     icon: StaticImageData;
   }[];
@@ -20,6 +21,7 @@ interface IAwardsCONSTANT {
 export const AWARDS: IAwardsCONSTANT[] = [
   {
     id: "1",
+    name: "зарождение ",
     awards: [
       {
         icon: anturazh,
@@ -28,6 +30,7 @@ export const AWARDS: IAwardsCONSTANT[] = [
   },
   {
     id: "2",
+    name: "гаснет свет",
     awards: [
       {
         icon: fear_2024,
@@ -45,6 +48,7 @@ export const AWARDS: IAwardsCONSTANT[] = [
   },
   {
     id: "3",
+    name: "астрал",
     awards: [
       {
         icon: fear_2022,
@@ -62,6 +66,7 @@ export const AWARDS: IAwardsCONSTANT[] = [
   },
   {
     id: "4",
+    name: "заклятие",
     awards: [
       {
         icon: fear_2021,

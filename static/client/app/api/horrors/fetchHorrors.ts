@@ -22,6 +22,7 @@ export interface IHorrorsPromise {
     image: string;
   }>;
   rating: number;
+  rules: string;
   registration_date: string;
   travel_time: number;
   older_14: boolean;
