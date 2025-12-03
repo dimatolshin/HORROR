@@ -14,13 +14,13 @@ const getImageUrl = (photos: Array<{ image: string }>) => {
   return photo ? api + photo.image : "";
 };
 
-const separateLastSentence = (description: string) => {
-  const sentences = description.split(".");
-  const lastSentence = sentences.pop();
-  const rest = sentences.join(".");
-
-  return { rest, lastSentence };
-};
+// const separateLastSentence = (description: string) => {
+//   const sentences = description.split(".");
+//   const lastSentence = sentences.pop();
+//   const rest = sentences.join(".");
+//
+//   return { rest, lastSentence };
+// };
 
 interface HeroHorrorSectionProps {
   horror: IHorrorsPromise;
@@ -52,7 +52,6 @@ export default async function HeroHorrorSection({
 
   const blurImageUrl = getImageUrl(photos_blur);
   const backCardImageUrl = getImageUrl(photos_back_card);
-  const { rest, lastSentence } = separateLastSentence(description);
 
   return (
     <>
@@ -134,9 +133,8 @@ export default async function HeroHorrorSection({
                   </h1>
                   <span className="md:text-[24px] mb-[25px]">{location}</span>
                   <div className="flex flex-col items-start 2xl:items-end gap-[20px] 2xl:flex-row">
-                    <p className="text-[10px] md:text-[16px] max-w-[703px]">
-                      {rest} <br /> <br />
-                      <span>{lastSentence}</span>
+                    <p className="text-[10px] md:text-[16px] max-w-[703px] whitespace-pre-wrap">
+                      {description}
                     </p>
                     {is_active && (
                       <ul className="flex items-center 2xl:mr-auto gap-[13px] mr-auto 2xl:ml-auto">

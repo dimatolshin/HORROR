@@ -11,7 +11,7 @@ export default function RulesSection({horror}: IRulesProps) {
       <div className="container">
         <div className="rules__block">
           <TitleBlockUI title="Правила посещения" />
-          <ul className="text-[#A4A6A8] flex flex-col text-[12px] gap-[8px] md:text-[36px] md:gap-[15px]">
+          <ul className="text-[#A4A6A8] flex flex-col text-[12px] gap-[8px] md:text-[36px] md:gap-[15px] whitespace-pre-wrap">
             {horror.rules}
           </ul>
         </div>
