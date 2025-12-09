@@ -25,6 +25,9 @@ class Horror(models.Model):
     older_14 = models.BooleanField(default=False,verbose_name='Необходимо чтоб все игроки были страше 14')
     id_mir_kvestov = models.BigIntegerField(null=True, blank=True)
     id_extrareality = models.CharField(null=True, blank=True)
+    red_price = models.IntegerField(default=120, verbose_name='Красная цена')
+    blue_price = models.IntegerField(default=120, verbose_name='Голубая цена')
+    caral_price = models.IntegerField(default=120, verbose_name='Караловая цена')
 
     class Meta:
         verbose_name = 'Квесты'
