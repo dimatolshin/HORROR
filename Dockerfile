@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.12
 
 ENV PYTHONUNBUFFERED=1
 
@@ -12,7 +12,10 @@ EXPOSE 8000
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && apt-get install -y --no-install-recommends locales-all \
+RUN apt-get update && apt-get install -y locales \
+    && sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen \
+    && update-locale LANG=ru_RU.UTF-8 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
