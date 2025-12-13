@@ -8,6 +8,7 @@ import { IHorrorsPromise } from "@/app/api/horrors/fetchHorrors";
 import { HorrorReviews } from "@/app/components/horrorReviews/horrorReviews";
 import { MoreQuestsServer } from "@/app/widgets/moreQuests/moreQuestServer";
 import { IReviewsPromise } from "@/app/api/reviews/fetchReviews";
+import parse from 'html-react-parser';
 
 const getImageUrl = (photos: Array<{ image: string }>) => {
   const photo = photos.find((item) => item.image);
@@ -134,7 +135,7 @@ export default async function HeroHorrorSection({
                   <span className="md:text-[24px] mb-[25px]">{location}</span>
                   <div className="flex flex-col items-start 2xl:items-end gap-[20px] 2xl:flex-row">
                     <p className="text-[10px] md:text-[16px] max-w-[703px] whitespace-pre-wrap">
-                      {description}
+                      {parse(`${description|| ''}`)}
                     </p>
                     {is_active && (
                       <ul className="flex items-center 2xl:mr-auto gap-[13px] mr-auto 2xl:ml-auto">

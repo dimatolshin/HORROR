@@ -9,7 +9,6 @@ export interface IHorrorsPromise {
   genre: string;
   id: number;
   is_active: boolean;
-  location: string;
   name: string;
   novelty: boolean;
   photos: Array<{
@@ -26,6 +25,10 @@ export interface IHorrorsPromise {
   registration_date: string;
   travel_time: number;
   older_14: boolean;
+  location: string;
+  red_price: number;
+  blue_price: number;
+  caral_price: number;
   id_extrareality: string;
 }
 
@@ -64,7 +67,7 @@ export async function fetchOneHorror(id: string): Promise<IHorrorsPromise> {
 }
 
 export const getOneHorror = async (id: string): Promise<IHorrorsPromise> =>
-  await fetch(`${api}/api/horrors/${id}`, { next: { revalidate: 600 } })
+  await fetch(`${api}/api/horrors/${id}`)
     .then((response) => {
       return response.json();
     })

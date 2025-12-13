@@ -22,24 +22,6 @@ interface IPrice {
   color: string;
 }
 
-const PRICE: IPrice[] = [
-  {
-    id: "1",
-    label: "120 Br",
-    color: "#11B3D1",
-  },
-  {
-    id: "2",
-    label: "130 Br",
-    color: "#0A8284",
-  },
-  {
-    id: "3",
-    label: "200 Br",
-    color: "#A40000",
-  },
-];
-
 export default function ReservationSection({ horror }: IReservationHorror) {
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
   const { selectedQuest, setSelectedQuest } = useQuest();
@@ -50,6 +32,27 @@ export default function ReservationSection({ horror }: IReservationHorror) {
       setSelectedQuest(activeHorrors.find((q) => q.is_active) || activeHorrors[0]);
     }
   }, [activeHorrors, selectedQuest, setSelectedQuest]);
+
+  let PRICE: IPrice[] = []
+  if (selectedQuest) {
+    PRICE = [
+      {
+        id: "1",
+        label: String(selectedQuest.blue_price) + " Br",
+        color: "#11B3D1",
+      },
+      {
+        id: "2",
+        label: String(selectedQuest.caral_price) + " Br",
+        color: "#0A8284",
+      },
+      {
+        id: "3",
+        label: String(selectedQuest.red_price) + " Br",
+        color: "#A40000",
+      },
+    ];
+  }
 
   return (
     <>
@@ -149,7 +152,7 @@ export default function ReservationSection({ horror }: IReservationHorror) {
           </CustomSwiper>
           <div className="flex items-center pt-[10px] my-[30px] gap-[29px] border-t-1 border-solid sm:border-0 text-white flex-wrap md:my-[102]">
             <span className="text-[12px] text-[#A4A6A8] md:text-[36px]">
-              Стоимость игры от:
+              Стоимость игры:
             </span>
             <ul className="flex items-center gap-[10px] md:gap-[29px]">
               {PRICE.map((element) => (

@@ -18,29 +18,31 @@ interface IPrice {
   color: string;
 }
 
-const PRICE: IPrice[] = [
-  {
-    id: "1",
-    label: "120 Br",
-    color: "#11B3D1",
-  },
-  {
-    id: "2",
-    label: "130 Br",
-    color: "#0A8284",
-  },
-  {
-    id: "3",
-    label: "200 Br",
-    color: "#A40000",
-  },
-];
-
 export default function ReservationHorrorSection({
   horror,
 }: IReservationHorror) {
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
 
+  let PRICE: IPrice[] = []
+  if (horror) {
+    PRICE = [
+      {
+        id: "1",
+        label: String(horror.blue_price) + " Br",
+        color: "#11B3D1",
+      },
+      {
+        id: "2",
+        label: String(horror.caral_price) + " Br",
+        color: "#0A8284",
+      },
+      {
+        id: "3",
+        label: String(horror.red_price) + " Br",
+        color: "#A40000",
+      },
+    ];
+  }
   return (
     <>
       <section id="reservation" className="reservation section--offset">
@@ -78,7 +80,7 @@ export default function ReservationHorrorSection({
             <>
               <div className="flex items-center gap-[29px] text-white flex-wrap md:mb-[102]">
                 <span className="text-[12px] text-[#A4A6A8] md:text-[36px]">
-                  Стоимость игры от:
+                  Стоимость игры:
                 </span>
                 <ul className="flex items-center gap-[10px] md:gap-[29px]">
                   {PRICE.map((element) => (
